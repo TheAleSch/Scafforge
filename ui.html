@@ -451,6 +451,57 @@
     .more-dropdown-item:hover { background: var(--accent); }
     .more-dropdown-item.destructive { color: #f87171; }
     .more-dropdown-item.destructive:hover { background: rgba(239,68,68,0.08); }
+    .more-dropdown-sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+    /* ── About panel ── */
+    .about-panel {
+      display: none; position: absolute; inset: 0; z-index: 300;
+      background: var(--background);
+      flex-direction: column;
+    }
+    .about-panel.open { display: flex; }
+    .about-header {
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .about-back {
+      width: 28px; height: 28px; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: transparent; border: none; border-radius: var(--radius);
+      color: var(--muted-foreground); cursor: pointer; flex-shrink: 0;
+      transition: background 0.12s, color 0.12s;
+    }
+    .about-back:hover { background: var(--accent); color: var(--foreground); }
+    .about-body {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px; padding: 32px 24px; text-align: center;
+    }
+    .about-logo {
+      width: 52px; height: 52px; border-radius: 12px;
+      background: var(--foreground);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 800; color: var(--background);
+    }
+    .about-name { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+    .about-version { font-size: 11px; color: var(--muted-foreground); margin-top: -14px; }
+    .about-desc { font-size: 12px; color: var(--muted-foreground); line-height: 1.6; max-width: 220px; }
+    .about-links { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 240px; }
+    .about-link-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 9px 14px; border-radius: var(--radius);
+      font-size: 12px; font-weight: 500; font-family: inherit;
+      cursor: pointer; border: 1px solid var(--border);
+      background: transparent; color: var(--foreground);
+      transition: background 0.12s, border-color 0.12s; text-decoration: none;
+    }
+    .about-link-btn:hover { background: var(--accent); border-color: var(--ring); }
+    .about-link-btn.primary {
+      background: var(--primary); color: var(--primary-foreground);
+      border-color: var(--primary);
+    }
+    .about-link-btn.primary:hover { opacity: 0.9; }
     .plugin-logo {
       width: 28px; height: 28px; border-radius: var(--radius);
       background: var(--foreground);
@@ -481,12 +532,47 @@
       </div>
     </div>
     <div class="more-wrap" id="moreWrap">
-      <button class="more-btn" id="moreBtn" title="More options" aria-haspopup="true" aria-expanded="false">&#x22EF;</button>
+      <button class="more-btn" id="moreBtn" title="Settings" aria-haspopup="true" aria-expanded="false">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
       <div class="more-dropdown" id="moreDropdown" role="menu">
+        <button class="more-dropdown-item" id="aboutBtn" role="menuitem">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          About
+        </button>
+        <div class="more-dropdown-sep"></div>
         <button class="more-dropdown-item destructive" id="clearFileBtn" role="menuitem">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
           Clear file
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- About panel (overlays the whole plugin) -->
+  <div class="about-panel" id="aboutPanel">
+    <div class="about-header">
+      <button class="about-back" id="aboutBack" title="Back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span style="font-size:12px; font-weight:600; color:var(--muted-foreground); text-transform:uppercase; letter-spacing:0.07em;">About</span>
+    </div>
+    <div class="about-body">
+      <div class="about-logo">S</div>
+      <div>
+        <div class="about-name">Scafforge</div>
+        <div class="about-version">Version 0.6 Alpha</div>
+      </div>
+      <div class="about-desc">Tailwind 4 + shadcn/ui design token &amp; component generator for Figma.</div>
+      <div class="about-links">
+        <a class="about-link-btn primary" href="mailto:alexandre.schrammel+scafforge@gmail.com?subject=Scafforge%20Feedback&body=Hi%20Alexandre%2C%0A%0A" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Provide feedback
+        </a>
+        <a class="about-link-btn" href="https://ale.design/?utm_source=figma&utm_medium=plugin&utm_campaign=scafforge" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          ale.design
+        </a>
       </div>
     </div>
   </div>
@@ -621,14 +707,17 @@
           <div class="foundation-name">shadcn/ui Semantic Tokens</div>
           <div class="foundation-desc">24 tokens — Light &amp; Dark modes — background, primary, border&hellip;</div>
         </div>
-        <span class="badge badge-outline">24</span>
+        <label class="switch-wrap" style="display:inline-block">
+          <input type="checkbox" id="semanticToggle" checked />
+          <span class="switch-track"></span>
+        </label>
       </div>
     </div>
 
-    <!-- Component Tokens -->
+    <!-- Components -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Component Tokens</span>
+        <span class="card-title">Components</span>
         <button class="btn btn-link" id="selectAllBtn">Select all</button>
       </div>
       <div class="card-body" style="padding:10px 14px">
@@ -636,10 +725,10 @@
       </div>
     </div>
 
-    <!-- Canvas Components -->
+    <!-- Canvas -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Canvas Components</span>
+        <span class="card-title">Canvas</span>
         <label class="switch-wrap" style="display:inline-block">
           <input type="checkbox" id="canvasToggle" />
           <span class="switch-track"></span>
@@ -665,15 +754,6 @@
               <option value="IBM Plex Sans">IBM Plex Sans</option>
             </select>
           </div>
-        </div>
-
-        <!-- Components to draw -->
-        <div class="flex-col gap-2">
-          <div class="flex-row">
-            <span class="label-muted">Components to draw</span>
-            <button class="btn btn-link" id="canvasSelectAll">Select all</button>
-          </div>
-          <div class="canvas-grid" id="canvasCompGrid"></div>
         </div>
 
         <!-- Page layout -->
@@ -877,40 +957,6 @@
       updateSelectAllLabel();
     });
 
-    // ── Canvas component picker ───────────────────────────────────────────────
-    var canvasSelected = new Set();
-    var canvasCompGrid = document.getElementById('canvasCompGrid');
-
-    COMPONENTS.forEach(function(comp) {
-      var item = document.createElement('div');
-      item.className = 'cc-item selected';
-      item.dataset.key = comp.key;
-      canvasSelected.add(comp.key);
-      item.innerHTML = '<div class="cc-dot"></div>' + comp.name;
-      item.addEventListener('click', function() {
-        if (canvasSelected.has(comp.key)) {
-          canvasSelected.delete(comp.key); item.classList.remove('selected');
-        } else {
-          canvasSelected.add(comp.key); item.classList.add('selected');
-        }
-        updateCanvasSelectAll();
-      });
-      canvasCompGrid.appendChild(item);
-    });
-
-    var canvasSelectAllBtn = document.getElementById('canvasSelectAll');
-    function updateCanvasSelectAll() {
-      canvasSelectAllBtn.textContent = canvasSelected.size === COMPONENTS.length ? 'Deselect all' : 'Select all';
-    }
-    canvasSelectAllBtn.addEventListener('click', function() {
-      var allSel = canvasSelected.size === COMPONENTS.length;
-      document.querySelectorAll('.cc-item').forEach(function(el) {
-        if (allSel) { canvasSelected.delete(el.dataset.key); el.classList.remove('selected'); }
-        else        { canvasSelected.add(el.dataset.key);    el.classList.add('selected');    }
-      });
-      updateCanvasSelectAll();
-    });
-
     // ── Canvas toggle ─────────────────────────────────────────────────────────
     var canvasToggle = document.getElementById('canvasToggle');
     var subOptions   = document.getElementById('subOptions');
@@ -982,15 +1028,16 @@
         pluginMessage: {
           type: 'generate',
           options: {
-            theme:            activeTheme,
-            style:            activeStyle,
-            components:       Array.from(selected),
-            canvasComponents: Array.from(canvasSelected),
-            createCanvas:     canvasToggle.checked,
-            pageMode:         pageMode,
-            coverPage:        document.getElementById('coverPageToggle').checked,
-            fontFamily:       document.getElementById('fontSelect').value,
-            iconLibrary:      activeIconLib,
+            theme:                 activeTheme,
+            style:                 activeStyle,
+            components:            Array.from(selected),
+            canvasComponents:      Array.from(selected),
+            includeSemanticTokens: document.getElementById('semanticToggle').checked,
+            createCanvas:          canvasToggle.checked,
+            pageMode:              pageMode,
+            coverPage:             document.getElementById('coverPageToggle').checked,
+            fontFamily:            document.getElementById('fontSelect').value,
+            iconLibrary:           activeIconLib,
           }
         }
       }, '*');
@@ -1009,6 +1056,17 @@
     document.addEventListener('click', function() {
       moreDropdown.classList.remove('open');
       moreBtn.setAttribute('aria-expanded', 'false');
+    });
+
+    document.getElementById('aboutBtn').addEventListener('click', function(e) {
+      e.stopPropagation();
+      moreDropdown.classList.remove('open');
+      moreBtn.setAttribute('aria-expanded', 'false');
+      document.getElementById('aboutPanel').classList.add('open');
+    });
+
+    document.getElementById('aboutBack').addEventListener('click', function() {
+      document.getElementById('aboutPanel').classList.remove('open');
     });
 
     document.getElementById('clearFileBtn').addEventListener('click', function(e) {

@@ -880,7 +880,37 @@ function addSetLabel(page, set) {
   return lbl;
 }
 
-// Apply wrapping auto-layout to a ComponentSet so variants don't stack
+// Arrange an array of ComponentSets on a page in a wrapping grid.
+// Sets flow left-to-right; when a row would exceed MAX_ROW_W they wrap down.
+function placeComponentSets(page, sets) {
+  var MARGIN   = 64;
+  var COL_GAP  = 80;
+  var ROW_GAP  = 120;
+  var LABEL_H  = 32;
+  var MAX_ROW_W = 2800;
+
+  var x = MARGIN;
+  var y = MARGIN + LABEL_H;
+  var rowMaxH = 0;
+
+  sets.forEach(function(set) {
+    // Wrap if this set won't fit on the current row (and we're not at the start)
+    if (x > MARGIN && x + set.width > MAX_ROW_W) {
+      x = MARGIN;
+      y += rowMaxH + ROW_GAP + LABEL_H;
+      rowMaxH = 0;
+    }
+    set.x = x;
+    set.y = y;
+    addSetLabel(page, set);
+    x += set.width + COL_GAP;
+    if (set.height > rowMaxH) rowMaxH = set.height;
+  });
+}
+
+// Apply wrapping auto-layout to a ComponentSet so variants wrap into a grid.
+// Strategy: let Figma compute the single-row width first (AUTO), then cap it
+// to TARGET_MAX_W so WRAP kicks in and creates multiple rows.
 function layoutSet(set, gap) {
   gap = gap !== undefined ? gap : 20;
   set.layoutMode = 'HORIZONTAL';
@@ -890,6 +920,16 @@ function layoutSet(set, gap) {
   set.paddingTop = set.paddingBottom = set.paddingLeft = set.paddingRight = gap;
   set.primaryAxisSizingMode = 'AUTO';
   set.counterAxisSizingMode = 'AUTO';
+
+  // Cap width so variants wrap into a grid instead of a single endless row.
+  // Only applies when the auto-computed single-row width exceeds the target.
+  var TARGET_MAX_W = 1200;
+  if (set.width > TARGET_MAX_W) {
+    var rowH = set.height; // single-row height before wrapping
+    set.primaryAxisSizingMode = 'FIXED';
+    set.resize(TARGET_MAX_W, rowH);
+    set.counterAxisSizingMode = 'AUTO'; // let height grow to fit wrapped rows
+  }
 }
 
 // ── Component builders — real Figma ComponentSets via combineAsVariants ───────
@@ -984,7 +1024,6 @@ function buildButtonPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Button';
   layoutSet(set, 16);
-  set.x = 40; set.y = 40;
 
   // Cache button components by "variant/size/state" for the group builder
   BUTTON_COMP_CACHE = {};
@@ -1076,7 +1115,6 @@ function buildButtonGroupPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Button Group';
   layoutSet(set, 24);
-  set.x = 40; set.y = 40;
   return set;
 }
 
@@ -1129,7 +1167,6 @@ function buildLabelPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Label';
   layoutSet(set, 16);
-  set.x = 40; set.y = 40;
   LABEL_COMP_CACHE = {};
   allComps.forEach(function(c) { LABEL_COMP_CACHE[c.name] = c; });
   return set;
@@ -1344,7 +1381,6 @@ function buildFormFieldPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Form Field';
   layoutSet(set, 24);
-  set.x = 40; set.y = 40;
   return set;
 }
 
@@ -1387,7 +1423,6 @@ function buildInputPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Input';
   layoutSet(set);
-  set.x = 40; set.y = 40;
   INPUT_COMP_CACHE = {};
   allComps.forEach(function(c) { INPUT_COMP_CACHE[c.name] = c; });
   return set;
@@ -1431,7 +1466,6 @@ function buildTextareaPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Textarea';
   layoutSet(set);
-  set.x = 40; set.y = 40;
   TEXTAREA_COMP_CACHE = {};
   allComps.forEach(function(c) { TEXTAREA_COMP_CACHE[c.name] = c; });
   return set;
@@ -1477,7 +1511,6 @@ function buildSelectPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Select';
   layoutSet(set);
-  set.x = 40; set.y = 40;
   SELECT_COMP_CACHE = {};
   allComps.forEach(function(c) { SELECT_COMP_CACHE[c.name] = c; });
   return set;
@@ -1519,7 +1552,6 @@ function buildSwitchPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Switch';
   layoutSet(set);
-  set.x = 40; set.y = 40;
   SWITCH_COMP_CACHE = {};
   allComps.forEach(function(c) { SWITCH_COMP_CACHE[c.name] = c; });
   return set;
@@ -1569,7 +1601,6 @@ function buildCheckboxPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Checkbox';
   layoutSet(set);
-  set.x = 40; set.y = 40;
   CHECKBOX_COMP_CACHE = {};
   allComps.forEach(function(c) { CHECKBOX_COMP_CACHE[c.name] = c; });
   return set;
@@ -1614,7 +1645,6 @@ function buildRadioPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Radio';
   layoutSet(set);
-  set.x = 40; set.y = 40;
   RADIO_COMP_CACHE = {};
   allComps.forEach(function(c) { RADIO_COMP_CACHE[c.name] = c; });
   return set;
@@ -1664,7 +1694,6 @@ function buildSliderPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Slider';
   layoutSet(set);
-  set.x = 40; set.y = 40;
   return set;
 }
 
@@ -1708,7 +1737,6 @@ function buildBadgePage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Badge';
   layoutSet(set);
-  set.x = 40; set.y = 40;
   return set;
 }
 
@@ -1814,7 +1842,6 @@ function buildCardPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Card';
   layoutSet(set);
-  set.x = 40; set.y = 40;
   return set;
 }
 
@@ -1884,7 +1911,6 @@ function buildAlertPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Alert';
   layoutSet(set);
-  set.x = 40; set.y = 40;
   return set;
 }
 
@@ -1977,7 +2003,6 @@ function buildToastPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Toast';
   layoutSet(set);
-  set.x = 40; set.y = 40;
   return set;
 }
 
@@ -2105,7 +2130,6 @@ function buildDialogPage(page) {
   var set = figma.combineAsVariants([comp], page);
   set.name = 'Dialog';
   layoutSet(set);
-  set.x = 40; set.y = 40;
   return set;
 }
 
@@ -2244,16 +2268,13 @@ function buildCanvasComponents(selectedComponents, options, fontFamily) {
     var singlePage = getOrCreatePage('Components');
     clearPage(singlePage);
     figma.currentPage = singlePage;
-    var offsetX = 40;
+    var singleSets = [];
     selectedComponents.forEach(function(key) {
       if (!builders[key]) return;
       var set = builders[key](singlePage);
-      if (set) {
-        set.x = offsetX; set.y = 64;
-        addSetLabel(singlePage, set);
-        offsetX += set.width + 80;
-      }
+      if (set) singleSets.push(set);
     });
+    placeComponentSets(singlePage, singleSets);
     return;
   }
 
@@ -2266,15 +2287,12 @@ function buildCanvasComponents(selectedComponents, options, fontFamily) {
       var gPage = getOrCreatePage(groupName);
       clearPage(gPage);
       figma.currentPage = gPage;
-      var offsetX = 40;
+      var groupSets = [];
       groupKeys.forEach(function(key) {
         var set = builders[key](gPage);
-        if (set) {
-          set.x = offsetX; set.y = 64;
-          addSetLabel(gPage, set);
-          offsetX += set.width + 80;
-        }
+        if (set) groupSets.push(set);
       });
+      placeComponentSets(gPage, groupSets);
     });
     return;
   }
@@ -2289,7 +2307,7 @@ function buildCanvasComponents(selectedComponents, options, fontFamily) {
     clearPage(pg);
     figma.currentPage = pg;
     var set = builders[key](pg);
-    if (set) addSetLabel(pg, set);
+    if (set) placeComponentSets(pg, [set]);
     pagesBuilt[pageName] = true;
   });
 
@@ -2307,8 +2325,11 @@ figma.ui.onmessage = async function(msg) {
       sendProgress('Creating Tailwind sizing tokens (font-size, radius, border-width, opacity)…', 20);
       createSizingCollection();
 
-      sendProgress('Creating shadcn/ui semantic themes (Light + Dark)…', 35);
-      var themeResult = createThemeCollection(primResult.variableMap, opts.theme);
+      var themeResult = { variableMap: {} };
+      if (opts.includeSemanticTokens !== false) {
+        sendProgress('Creating shadcn/ui semantic themes (Light + Dark)…', 35);
+        themeResult = createThemeCollection(primResult.variableMap, opts.theme);
+      }
 
       if (opts.components && opts.components.length > 0) {
         sendProgress('Creating component token variables…', 60);
