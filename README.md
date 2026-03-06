@@ -1,18 +1,16 @@
 # Scafforge
 
-A Figma plugin that generates Tailwind 4 + shadcn/ui design tokens and component scaffolding directly in your Figma file.
+> Tailwind 4 + shadcn/ui design tokens & components for Figma
 
-Created by [Alexandre Schrammel](https://ale.design/)
+Scafforge generates Tailwind 4 color primitives, shadcn/ui semantic tokens, and ready-to-use Figma components to jump-start your design system.
+
+Select a theme, pick a style, and generate variables + canvas components in one click. Supports Light & Dark modes, 5 visual styles (Vega, Nova, Maia, Lyra, Mira), and covers the full component range — buttons, inputs, selects, checkboxes, switches, badges, alerts, dialogs, and more.
+
+Built with Tailwind 4 as the foundation, with more complex components composed with shadcn/ui and Radix primitives coming as it evolves.
+
+Created by [Alexandre Schrammel](https://ale.design/?utm_source=figma&utm_medium=plugin&utm_campaign=scafforge)
 
 ---
-
-## What it does
-
-- Generates **Tailwind 4 color primitives** (244 variables across the full color scale)
-- Creates **shadcn/ui semantic theme tokens** with Light and Dark mode support
-- Generates **sizing tokens** — font sizes, border radius, border widths, and opacity scale
-- Generates **component-level tokens** for UI primitives (Button, Input, Badge, etc.)
-- Scaffolds **canvas component pages** with fully built Figma component sets for every supported component
 
 ## Components
 
@@ -35,8 +33,6 @@ Created by [Alexandre Schrammel](https://ale.design/)
 
 ## Styles
 
-Choose from 5 visual styles that control sizing, spacing, and border radius across all components:
-
 - **Vega** — The classic shadcn/ui look
 - **Nova** — Compact, reduced padding
 - **Maia** — Rounded, spacious
@@ -48,9 +44,5 @@ Choose from 5 visual styles that control sizing, spacing, and border radius acro
 1. Open the plugin in Figma
 2. Select a theme (neutral or colored primary)
 3. Pick a visual style
-4. Choose which components to generate tokens and/or canvas pages for
+4. Choose which components to generate
 5. Click **Generate**
-
----
-
-[ale.design](https://ale.design/?utm_source=figma&utm_medium=plugin&utm_campaign=scafforge)
