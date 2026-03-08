@@ -511,8 +511,8 @@ function removeExistingCollection(name) {
 
 // ─── Variable Collections ─────────────────────────────────────────────────────
 function createPrimitivesCollection() {
-  removeExistingCollection('Tailwind / Primitives');
-  var col = figma.variables.createVariableCollection('Tailwind / Primitives');
+  removeExistingCollection('Primitives');
+  var col = figma.variables.createVariableCollection('Primitives');
   var mid = col.defaultModeId;
   col.renameMode(mid, 'Default');
   var map = {};
@@ -555,34 +555,40 @@ function createThemeCollection(primMap, theme) {
 }
 
 function createSizingCollection() {
-  removeExistingCollection('Tailwind / Sizing');
-  var col = figma.variables.createVariableCollection('Tailwind / Sizing');
+  removeExistingCollection('Sizing');
+  var col = figma.variables.createVariableCollection('Sizing');
   var mid = col.defaultModeId;
   col.renameMode(mid, 'Default');
 
-  function makeFloat(name, value) {
+  function makeFloat(name, value, scopes) {
     var v = figma.variables.createVariable(name, col, 'FLOAT');
     v.setValueForMode(mid, value);
+    if (scopes) v.scopes = scopes;
   }
 
   // Font sizes (px)
   [['xs',12],['sm',14],['base',16],['lg',18],['xl',20],['2xl',24],['3xl',30],['4xl',36],['5xl',48],['6xl',60],['7xl',72],['8xl',96],['9xl',128]].forEach(function(p) {
-    makeFloat('font-size/' + p[0], p[1]);
+    makeFloat('font-size/' + p[0], p[1], ['FONT_SIZE', 'LINE_HEIGHT', 'LETTER_SPACING', 'PARAGRAPH_SPACING', 'PARAGRAPH_INDENT']);
   });
 
   // Border radius (px)
   [['none',0],['sm',2],['DEFAULT',4],['md',6],['lg',8],['xl',12],['2xl',16],['3xl',24],['full',9999]].forEach(function(p) {
-    makeFloat('radius/' + p[0], p[1]);
+    makeFloat('radius/' + p[0], p[1], ['CORNER_RADIUS']);
   });
 
   // Border width (px)
   [['0',0],['DEFAULT',1],['2',2],['4',4],['8',8]].forEach(function(p) {
-    makeFloat('border-width/' + p[0], p[1]);
+    makeFloat('border-width/' + p[0], p[1], ['STROKE_FLOAT']);
+  });
+
+  // Spacing (px) — used for padding, gap, and sizing
+  [['0',0],['px',1],['0-5',2],['1',4],['1-5',6],['2',8],['2-5',10],['3',12],['3-5',14],['4',16],['5',20],['6',24],['7',28],['8',32],['9',36],['10',40],['11',44],['12',48],['14',56],['16',64],['20',80],['24',96],['28',112],['32',128],['36',144],['40',160],['44',176],['48',192],['52',208],['56',224],['60',240],['64',256],['72',288],['80',320],['96',384]].forEach(function(p) {
+    makeFloat('spacing/' + p[0], p[1], ['WIDTH_HEIGHT', 'GAP']);
   });
 
   // Opacity (0–1)
   [0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100].forEach(function(n) {
-    makeFloat('opacity/' + n, n / 100);
+    makeFloat('opacity/' + n, n / 100, ['OPACITY']);
   });
 }
 
@@ -948,7 +954,9 @@ function buildButtonPage(page) {
     { key:'sm',   label:'sm',      w:96,        h:Math.max(S.btnH - 8, 24), fz:Math.max(S.fontSize - 1, 10), px:12 },
     { key:'md',   label:'Default', w:120,       h:S.btnH,                   fz:S.fontSize,                   px:16 },
     { key:'lg',   label:'lg',      w:160,       h:S.btnH + 4,               fz:S.fontSize + 2,               px:24 },
-    { key:'icon', label:'icon',    w:S.btnH,    h:S.btnH,                   fz:S.fontSize,                   px:0  },
+    { key:'icon-sm', label:'icon-sm', w:Math.max(S.btnH - 8, 24), h:Math.max(S.btnH - 8, 24), fz:Math.max(S.fontSize - 1, 10), px:0 },
+    { key:'icon',    label:'icon',    w:S.btnH,                   h:S.btnH,                   fz:S.fontSize,                   px:0 },
+    { key:'icon-lg', label:'icon-lg', w:S.btnH + 4,               h:S.btnH + 4,               fz:S.fontSize + 2,               px:0 },
   ];
   var states = ['Default', 'Hover', 'Disabled'];
   var allComps = [];
@@ -984,7 +992,7 @@ function buildButtonPage(page) {
         }
         if (state === 'Disabled') comp.opacity = 0.4;
 
-        if (sz.key === 'icon') {
+        if (sz.key.indexOf('icon') === 0) {
           var iconInst = getIcon('plus');
           if (iconInst) {
             tintIcon(iconInst, v.fg || '#fafafa');
