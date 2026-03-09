@@ -305,21 +305,33 @@
     .p-badge.s-mira  { border-radius: 999px; height: 12px !important; }
 
     /* ── Theme pills ── */
-    .theme-pills { display: flex; flex-wrap: wrap; gap: 5px; }
-    .theme-pill {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 3px 9px; border-radius: 999px;
-      background: transparent; border: 1px solid var(--border);
-      cursor: pointer; user-select: none;
-      font-size: 11px; font-weight: 500; color: var(--muted-foreground);
-      transition: all 0.12s;
+    /* ── Color grid (reuses comp-grid pattern) ── */
+    .color-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
     }
-    .theme-pill:hover { border-color: var(--ring); color: var(--foreground); }
-    .theme-pill.active {
-      background: var(--primary); border-color: var(--primary);
-      color: var(--primary-foreground);
+    .color-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px; cursor: pointer; border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border); transition: background 0.1s;
     }
-    .theme-swatch { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .color-item:nth-child(3n) { border-right: none; }
+    .color-item:hover { background: var(--accent); }
+    .color-item.selected { background: rgba(250,250,250,0.05); }
+    .color-swatch { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); }
+    .color-name { font-size: 11px; }
+
+    /* ── Opacity pills ── */
+    .opacity-steps { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+    .opacity-pill {
+      font-size: 11px; padding: 2px 8px; border-radius: 4px; cursor: pointer;
+      border: 1px solid var(--border); background: transparent; color: var(--muted-foreground);
+    }
+    .opacity-pill.active { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
+
+    /* ── Semantic roles ── */
+    .role-row { display: flex; align-items: center; gap: 8px; }
+    .role-label { font-size: 12px; width: 80px; flex-shrink: 0; color: var(--muted-foreground); }
 
     /* ── Segmented control ── */
     .seg-ctrl {
@@ -580,21 +592,61 @@
   <!-- Scrollable content -->
   <div class="content">
 
-    <!-- Theme -->
+    <!-- Color Palette -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Theme</span>
-        <span class="badge badge-outline" id="themeLabel">Zinc</span>
+        <span class="card-title">Color Palette</span>
+        <button class="btn btn-link" id="selectAllColorsBtn">Select all</button>
+      </div>
+      <div class="card-body" style="padding:10px 14px">
+        <div class="color-grid" id="colorGrid"></div>
+      </div>
+      <div class="separator"></div>
+      <div class="card-body" style="padding:10px 14px">
+        <div class="flex-row" style="align-items:center">
+          <span class="label" style="flex:1">Opacity variants</span>
+          <label class="switch-wrap" style="display:inline-block">
+            <input type="checkbox" id="opacityToggle" />
+            <span class="switch-track"></span>
+          </label>
+        </div>
+        <div class="opacity-steps" id="opacitySteps" style="display:none">
+          <button class="opacity-pill active" data-step="0">0</button>
+          <button class="opacity-pill active" data-step="5">5</button>
+          <button class="opacity-pill active" data-step="10">10</button>
+          <button class="opacity-pill active" data-step="20">20</button>
+          <button class="opacity-pill active" data-step="25">25</button>
+          <button class="opacity-pill active" data-step="30">30</button>
+          <button class="opacity-pill active" data-step="40">40</button>
+          <button class="opacity-pill active" data-step="50">50</button>
+          <button class="opacity-pill active" data-step="60">60</button>
+          <button class="opacity-pill active" data-step="70">70</button>
+          <button class="opacity-pill active" data-step="75">75</button>
+          <button class="opacity-pill active" data-step="80">80</button>
+          <button class="opacity-pill active" data-step="90">90</button>
+          <button class="opacity-pill active" data-step="95">95</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Semantic Tokens -->
+    <div class="card" id="rolesCard">
+      <div class="card-header">
+        <span class="card-title">Semantic Tokens</span>
+      </div>
+      <div class="card-body" style="padding:8px 14px 0">
+        <div class="seg-ctrl" id="tokenStructureSeg">
+          <button class="seg-btn active" data-value="classic">Classic (ShadCN)</button>
+          <button class="seg-btn"        data-value="improved">Ale Style</button>
+        </div>
       </div>
       <div class="card-body">
-        <div class="flex-col gap-2">
-          <span class="group-label">Neutral base</span>
-          <div class="theme-pills" id="neutralPills"></div>
-        </div>
-        <div class="flex-col gap-2">
-          <span class="group-label">Colored primary</span>
-          <div class="theme-pills" id="coloredPills"></div>
-        </div>
+        <div class="role-row"><span class="role-label">Neutral</span><div class="select-wrap"><select class="shad-select role-select" id="roleNeutral"></select></div></div>
+        <div class="role-row"><span class="role-label">Primary</span><div class="select-wrap"><select class="shad-select role-select" id="rolePrimary"></select></div></div>
+        <div class="role-row"><span class="role-label">Destructive</span><div class="select-wrap"><select class="shad-select role-select" id="roleDestructive"></select></div></div>
+        <div class="role-row"><span class="role-label">Success</span><div class="select-wrap"><select class="shad-select role-select" id="roleSuccess"></select></div></div>
+        <div class="role-row"><span class="role-label">Warning</span><div class="select-wrap"><select class="shad-select role-select" id="roleWarning"></select></div></div>
+        <div class="role-row"><span class="role-label">Info</span><div class="select-wrap"><select class="shad-select role-select" id="roleInfo"></select></div></div>
       </div>
     </div>
 
@@ -677,38 +729,115 @@
     <div class="card">
       <div class="card-header">
         <span class="card-title">Foundation</span>
-        <span class="badge badge-success">Always included</span>
+        <span class="badge badge-outline" id="primitivesBadge">0</span>
       </div>
       <div class="foundation-item">
         <div class="foundation-icon" style="background:linear-gradient(135deg,#3b82f6,#f43f5e)"></div>
         <div class="foundation-info">
-          <div class="foundation-name">Tailwind 4 Primitives</div>
-          <div class="foundation-desc">244 variables — 22 scales &times; 11 shades + black &amp; white</div>
+          <div class="foundation-name">Color Primitives</div>
+          <div class="foundation-desc" id="primitivesDesc">0 variables</div>
         </div>
-        <span class="badge badge-outline">244</span>
+        <span class="badge badge-success">Always on</span>
       </div>
-      <div class="swatch-strip">
-        <div class="swatch" style="background:#ef4444"></div>
-        <div class="swatch" style="background:#f97316"></div>
-        <div class="swatch" style="background:#eab308"></div>
-        <div class="swatch" style="background:#22c55e"></div>
-        <div class="swatch" style="background:#06b6d4"></div>
-        <div class="swatch" style="background:#3b82f6"></div>
-        <div class="swatch" style="background:#6366f1"></div>
-        <div class="swatch" style="background:#8b5cf6"></div>
-        <div class="swatch" style="background:#ec4899"></div>
-        <div class="swatch" style="background:#64748b"></div>
-        <div class="swatch" style="background:#71717a"></div>
-      </div>
-      <div class="separator"></div>
-      <div class="foundation-item">
+      <div class="separator" id="semanticSep"></div>
+      <div class="foundation-item" id="semanticRow">
         <div class="foundation-icon" style="background:linear-gradient(135deg,#fafafa,#18181b)"></div>
         <div class="foundation-info">
-          <div class="foundation-name">shadcn/ui Semantic Tokens</div>
-          <div class="foundation-desc">24 tokens — Light &amp; Dark modes — background, primary, border&hellip;</div>
+          <div class="foundation-name">shadcn/ui Theme</div>
+          <div class="foundation-desc">Light &amp; Dark modes</div>
         </div>
         <label class="switch-wrap" style="display:inline-block">
           <input type="checkbox" id="semanticToggle" checked />
+          <span class="switch-track"></span>
+        </label>
+      </div>
+      <div class="separator"></div>
+      <div class="foundation-item">
+        <div class="foundation-icon" style="background:linear-gradient(135deg,#a1a1aa,#3f3f46)"></div>
+        <div class="foundation-info">
+          <div class="foundation-name">Radius</div>
+          <div class="foundation-desc">9 tokens — none to full</div>
+        </div>
+        <label class="switch-wrap" style="display:inline-block">
+          <input type="checkbox" id="radiusToggle" checked />
+          <span class="switch-track"></span>
+        </label>
+      </div>
+      <div class="separator"></div>
+      <div class="foundation-item">
+        <div class="foundation-icon" style="background:linear-gradient(135deg,#71717a,#27272a)"></div>
+        <div class="foundation-info">
+          <div class="foundation-name">Spacing</div>
+          <div class="foundation-desc">35 tokens — 0 to 96</div>
+        </div>
+        <label class="switch-wrap" style="display:inline-block">
+          <input type="checkbox" id="spacingToggle" checked />
+          <span class="switch-track"></span>
+        </label>
+      </div>
+      <div class="separator"></div>
+      <div class="foundation-item">
+        <div class="foundation-icon" style="background:linear-gradient(135deg,#fafafa,#52525b)"></div>
+        <div class="foundation-info">
+          <div class="foundation-name">Font Sizes</div>
+          <div class="foundation-desc">13 tokens — xs to 9xl</div>
+        </div>
+        <label class="switch-wrap" style="display:inline-block">
+          <input type="checkbox" id="fontSizeToggle" checked />
+          <span class="switch-track"></span>
+        </label>
+      </div>
+      <div class="separator"></div>
+      <div class="foundation-item">
+        <div class="foundation-icon" style="background:linear-gradient(135deg,#d4d4d8,#3f3f46)"></div>
+        <div class="foundation-info">
+          <div class="foundation-name">Border Width</div>
+          <div class="foundation-desc">5 tokens — 0 to 8</div>
+        </div>
+        <label class="switch-wrap" style="display:inline-block">
+          <input type="checkbox" id="borderWidthToggle" checked />
+          <span class="switch-track"></span>
+        </label>
+      </div>
+      <div class="separator"></div>
+      <div class="foundation-item">
+        <div class="foundation-icon" style="background:linear-gradient(135deg,#fafafa 0%,transparent 100%)"></div>
+        <div class="foundation-info">
+          <div class="foundation-name">Opacity</div>
+          <div class="foundation-desc">21 tokens — 0 to 100</div>
+        </div>
+        <label class="switch-wrap" style="display:inline-block">
+          <input type="checkbox" id="opacityVarsToggle" checked />
+          <span class="switch-track"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Styles -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Styles</span>
+      </div>
+      <div class="foundation-item">
+        <div class="foundation-icon" style="background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.25) 100%)"></div>
+        <div class="foundation-info">
+          <div class="foundation-name">Shadows</div>
+          <div class="foundation-desc">6 effect styles — sm to 2xl + inner</div>
+        </div>
+        <label class="switch-wrap" style="display:inline-block">
+          <input type="checkbox" id="shadowsToggle" checked />
+          <span class="switch-track"></span>
+        </label>
+      </div>
+      <div class="separator"></div>
+      <div class="foundation-item">
+        <div class="foundation-icon" style="background:linear-gradient(135deg,#fafafa,#a1a1aa)"></div>
+        <div class="foundation-info">
+          <div class="foundation-name">Text Styles</div>
+          <div class="foundation-desc">13 text styles — xs to 9xl</div>
+        </div>
+        <label class="switch-wrap" style="display:inline-block">
+          <input type="checkbox" id="textStylesToggle" />
           <span class="switch-track"></span>
         </label>
       </div>
@@ -729,11 +858,8 @@
     <div class="card">
       <div class="card-header">
         <span class="card-title">Canvas</span>
-        <label class="switch-wrap" style="display:inline-block">
-          <input type="checkbox" id="canvasToggle" />
-          <span class="switch-track"></span>
-        </label>
       </div>
+      <input type="checkbox" id="canvasToggle" checked style="display:none" />
 
       <div class="card-body">
         <!-- Font -->
@@ -757,7 +883,7 @@
         </div>
 
         <!-- Page layout -->
-        <div class="flex-col gap-2" id="subOptions" style="display:none">
+        <div class="flex-col gap-2" id="subOptions" style="display:flex;flex-direction:column">
           <div class="separator"></div>
           <span class="group-label">Page layout</span>
 
@@ -828,7 +954,7 @@
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       <div class="progress-text" id="progressText"></div>
     </div>
-    <button class="btn btn-primary" id="generateBtn">Generate Variables</button>
+    <button class="btn btn-primary" id="generateBtn">Generate</button>
   </div>
 
   <script>
@@ -846,46 +972,166 @@
       });
     });
 
-    // ── Theme picker ──────────────────────────────────────────────────────────
-    var NEUTRAL_THEMES = [
-      { key:'zinc',    label:'Zinc',    swatch:'#71717a' },
+    // ── Color palette picker ────────────────────────────────────────────────
+    var ALL_COLORS = [
       { key:'slate',   label:'Slate',   swatch:'#64748b' },
-      { key:'stone',   label:'Stone',   swatch:'#78716c' },
       { key:'gray',    label:'Gray',    swatch:'#6b7280' },
+      { key:'zinc',    label:'Zinc',    swatch:'#71717a' },
       { key:'neutral', label:'Neutral', swatch:'#737373' },
+      { key:'stone',   label:'Stone',   swatch:'#78716c' },
+      { key:'red',     label:'Red',     swatch:'#ef4444' },
+      { key:'orange',  label:'Orange',  swatch:'#f97316' },
+      { key:'amber',   label:'Amber',   swatch:'#f59e0b' },
+      { key:'yellow',  label:'Yellow',  swatch:'#eab308' },
+      { key:'lime',    label:'Lime',    swatch:'#84cc16' },
+      { key:'green',   label:'Green',   swatch:'#22c55e' },
+      { key:'emerald', label:'Emerald', swatch:'#10b981' },
+      { key:'teal',    label:'Teal',    swatch:'#14b8a6' },
+      { key:'cyan',    label:'Cyan',    swatch:'#06b6d4' },
+      { key:'sky',     label:'Sky',     swatch:'#0ea5e9' },
+      { key:'blue',    label:'Blue',    swatch:'#3b82f6' },
+      { key:'indigo',  label:'Indigo',  swatch:'#6366f1' },
+      { key:'violet',  label:'Violet',  swatch:'#8b5cf6' },
+      { key:'purple',  label:'Purple',  swatch:'#a855f7' },
+      { key:'fuchsia', label:'Fuchsia', swatch:'#d946ef' },
+      { key:'pink',    label:'Pink',    swatch:'#ec4899' },
+      { key:'rose',    label:'Rose',    swatch:'#f43f5e' },
     ];
-    var COLORED_THEMES = [
-      { key:'rose',   label:'Rose',   swatch:'#f43f5e' },
-      { key:'orange', label:'Orange', swatch:'#f97316' },
-      { key:'blue',   label:'Blue',   swatch:'#3b82f6' },
-      { key:'green',  label:'Green',  swatch:'#22c55e' },
-      { key:'violet', label:'Violet', swatch:'#8b5cf6' },
-      { key:'yellow', label:'Yellow', swatch:'#eab308' },
-      { key:'red',    label:'Red',    swatch:'#ef4444' },
-    ];
-    var ALL_THEMES = NEUTRAL_THEMES.concat(COLORED_THEMES);
-    var activeTheme = 'zinc';
+    var selectedColors = new Set(['zinc','blue','red','green','amber','sky']);
+    var DEFAULT_ROLES = { neutral:'zinc', primary:'blue', destructive:'red', success:'green', warning:'amber', info:'sky' };
+    var roleSelections = Object.assign({}, DEFAULT_ROLES);
+    var tokenStructure = 'classic';
 
-    function renderThemePills(themes, containerId) {
-      var container = document.getElementById(containerId);
-      themes.forEach(function(t) {
-        var pill = document.createElement('button');
-        pill.className = 'theme-pill' + (t.key === activeTheme ? ' active' : '');
-        pill.dataset.key = t.key;
-        pill.innerHTML = '<span class="theme-swatch" style="background:' + t.swatch + '"></span>' + t.label;
-        pill.addEventListener('click', function() {
-          activeTheme = t.key;
-          document.querySelectorAll('.theme-pill').forEach(function(p) {
-            p.classList.toggle('active', p.dataset.key === activeTheme);
-          });
-          var found = ALL_THEMES.filter(function(x){ return x.key === activeTheme; })[0];
-          document.getElementById('themeLabel').textContent = found ? found.label : 'Zinc';
+    // ── Token structure segmented control ──
+    document.querySelectorAll('#tokenStructureSeg .seg-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#tokenStructureSeg .seg-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        tokenStructure = btn.dataset.value;
+        // Hide shadcn semantic row in improved mode
+        var isImproved = tokenStructure === 'improved';
+        document.getElementById('semanticRow').style.display = isImproved ? 'none' : '';
+        document.getElementById('semanticSep').style.display = isImproved ? 'none' : '';
+        if (isImproved) document.getElementById('semanticToggle').checked = false;
+      });
+    });
+
+    // ── Render color grid ──
+    var colorGrid = document.getElementById('colorGrid');
+    ALL_COLORS.forEach(function(c) {
+      var item = document.createElement('div');
+      item.className = 'color-item' + (selectedColors.has(c.key) ? ' selected' : '');
+      item.dataset.key = c.key;
+      item.innerHTML =
+        '<div class="color-swatch" style="background:' + c.swatch + '"></div>' +
+        '<span class="color-name">' + c.label + '</span>';
+      item.addEventListener('click', function() {
+        if (selectedColors.has(c.key)) {
+          // Don't allow deselecting if it's assigned to a role
+          var usedByRole = Object.keys(roleSelections).filter(function(r) { return roleSelections[r] === c.key; });
+          if (usedByRole.length > 0) return; // silently prevent
+          selectedColors.delete(c.key);
+          item.classList.remove('selected');
+        } else {
+          selectedColors.add(c.key);
+          item.classList.add('selected');
+        }
+        updateRoleDropdowns();
+        updatePrimitivesCount();
+        updateColorSelectAllLabel();
+      });
+      colorGrid.appendChild(item);
+    });
+
+    // Remove last row's bottom borders dynamically
+    function fixColorGridBorders() {
+      var items = colorGrid.querySelectorAll('.color-item');
+      items.forEach(function(el) { el.style.borderBottom = ''; });
+      var total = items.length;
+      var lastRowStart = total - (total % 3 || 3);
+      for (var i = lastRowStart; i < total; i++) items[i].style.borderBottom = 'none';
+    }
+    fixColorGridBorders();
+
+    var selectAllColorsBtn = document.getElementById('selectAllColorsBtn');
+    function updateColorSelectAllLabel() {
+      selectAllColorsBtn.textContent = selectedColors.size === ALL_COLORS.length ? 'Deselect all' : 'Select all';
+    }
+    selectAllColorsBtn.addEventListener('click', function() {
+      var allSel = selectedColors.size === ALL_COLORS.length;
+      if (allSel) {
+        // Keep only colors used by roles
+        var needed = new Set(Object.keys(roleSelections).map(function(r) { return roleSelections[r]; }));
+        selectedColors = new Set(needed);
+      } else {
+        ALL_COLORS.forEach(function(c) { selectedColors.add(c.key); });
+      }
+      colorGrid.querySelectorAll('.color-item').forEach(function(el) {
+        el.classList.toggle('selected', selectedColors.has(el.dataset.key));
+      });
+      updateRoleDropdowns();
+      updatePrimitivesCount();
+      updateColorSelectAllLabel();
+    });
+
+    // ── Semantic role dropdowns ──
+    function updateRoleDropdowns() {
+      var selArr = [];
+      ALL_COLORS.forEach(function(c) { if (selectedColors.has(c.key)) selArr.push(c); });
+      ['Neutral','Primary','Destructive','Success','Warning','Info'].forEach(function(role) {
+        var id = 'role' + role;
+        var sel = document.getElementById(id);
+        var roleKey = role.toLowerCase();
+        var current = roleSelections[roleKey];
+        sel.innerHTML = '';
+        selArr.forEach(function(c) {
+          var opt = document.createElement('option');
+          opt.value = c.key; opt.textContent = c.label;
+          if (c.key === current) opt.selected = true;
+          sel.appendChild(opt);
         });
-        container.appendChild(pill);
+        // If current value was removed, reset to first available
+        if (!selectedColors.has(current) && selArr.length > 0) {
+          roleSelections[roleKey] = selArr[0].key;
+          sel.value = selArr[0].key;
+        }
+        sel.onchange = function() { roleSelections[roleKey] = sel.value; };
       });
     }
-    renderThemePills(NEUTRAL_THEMES, 'neutralPills');
-    renderThemePills(COLORED_THEMES, 'coloredPills');
+    updateRoleDropdowns();
+
+    // ── Opacity toggle + pills ──
+    var opacityEnabled = false;
+    var opacitySteps = new Set([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 95]);
+    var opacityToggle = document.getElementById('opacityToggle');
+    var opacityStepsEl = document.getElementById('opacitySteps');
+
+    opacityToggle.addEventListener('change', function() {
+      opacityEnabled = opacityToggle.checked;
+      opacityStepsEl.style.display = opacityEnabled ? 'flex' : 'none';
+      updatePrimitivesCount();
+    });
+
+    opacityStepsEl.querySelectorAll('.opacity-pill').forEach(function(pill) {
+      pill.addEventListener('click', function() {
+        var step = parseInt(pill.dataset.step);
+        if (opacitySteps.has(step)) { opacitySteps.delete(step); pill.classList.remove('active'); }
+        else { opacitySteps.add(step); pill.classList.add('active'); }
+        updatePrimitivesCount();
+      });
+    });
+
+    // ── Dynamic primitives count ──
+    function updatePrimitivesCount() {
+      var base = selectedColors.size * 11 + 2; // shades + black/white
+      var opacity = opacityEnabled ? selectedColors.size * 11 * opacitySteps.size : 0;
+      var total = base + opacity;
+      document.getElementById('primitivesBadge').textContent = total;
+      var desc = selectedColors.size + ' scales \u00d7 11 shades + black & white';
+      if (opacity > 0) desc += ' + ' + opacity + ' opacity variants';
+      document.getElementById('primitivesDesc').textContent = total + ' variables \u2014 ' + desc;
+    }
+    updatePrimitivesCount();
 
     // ── Component token grid ──────────────────────────────────────────────────
     var COMPONENTS = [
@@ -957,17 +1203,8 @@
       updateSelectAllLabel();
     });
 
-    // ── Canvas toggle ─────────────────────────────────────────────────────────
+    // ── Canvas (always on) ──────────────────────────────────────────────────
     var canvasToggle = document.getElementById('canvasToggle');
-    var subOptions   = document.getElementById('subOptions');
-
-    canvasToggle.addEventListener('change', function() {
-      subOptions.style.display = canvasToggle.checked ? 'flex' : 'none';
-      if (canvasToggle.checked) subOptions.style.flexDirection = 'column';
-      document.getElementById('generateBtn').textContent =
-        canvasToggle.checked ? 'Generate Variables + Components' : 'Generate Variables';
-      parent.postMessage({ pluginMessage: { type:'resize', height: canvasToggle.checked ? 860 : 720 } }, '*');
-    });
 
     // ── Radio group (styled) ──────────────────────────────────────────────────
     var radioItems = document.querySelectorAll('.radio-item[id^="radio-"]');
@@ -1114,11 +1351,21 @@
           pluginMessage: {
             type: 'generate',
             options: {
-              theme:                 activeTheme,
+              selectedColors:        Array.from(selectedColors),
+              semanticRoles:         Object.assign({}, roleSelections),
+              tokenStructure:        tokenStructure,
+              opacityVariants:       opacityEnabled ? Array.from(opacitySteps) : [],
               style:                 activeStyle,
               components:            Array.from(selected),
               canvasComponents:      Array.from(selected),
-              includeSemanticTokens: document.getElementById('semanticToggle').checked,
+              includeSemanticTokens: tokenStructure === 'improved' || document.getElementById('semanticToggle').checked,
+              includeRadius:         document.getElementById('radiusToggle').checked,
+              includeSpacing:        document.getElementById('spacingToggle').checked,
+              includeFontSizes:      document.getElementById('fontSizeToggle').checked,
+              includeBorderWidth:    document.getElementById('borderWidthToggle').checked,
+              includeOpacityVars:    document.getElementById('opacityVarsToggle').checked,
+              includeShadows:        document.getElementById('shadowsToggle').checked,
+              includeTextStyles:     document.getElementById('textStylesToggle').checked,
               createCanvas:          canvasToggle.checked,
               pageMode:              pageMode,
               coverPage:             document.getElementById('coverPageToggle').checked,

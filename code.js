@@ -1,4 +1,4 @@
-figma.showUI(__html__, { width: 460, height: 720, title: 'TW4 + shadcn/ui Variables' });
+figma.showUI(__html__, { width: 460, height: 800, title: 'TW4 + shadcn/ui Variables' });
 
 // ─── Tailwind 4 Color Palette ────────────────────────────────────────────────
 var TW_COLORS = {
@@ -26,28 +26,19 @@ var TW_COLORS = {
   rose:    { 50:'#fff1f2',100:'#ffe4e6',200:'#fecdd3',300:'#fda4af',400:'#fb7185',500:'#f43f5e',600:'#e11d48',700:'#be123c',800:'#9f1239',900:'#881337',950:'#4c0519' }
 };
 
-// ─── Semantic Tokens (per shadcn/ui theme) ───────────────────────────────────
-// Neutral themes swap the base scale; colored themes keep zinc neutral but
-// override primary, primary-foreground and ring.
-var COLORED_PRIMARIES = {
-  rose:   { priL:'rose-700',   priD:'rose-400',   pfL:'rose-50',    pfD:'rose-950',  ringL:'rose-500',   ringD:'rose-300'   },
-  orange: { priL:'orange-600', priD:'orange-400', pfL:'orange-50',  pfD:'orange-950',ringL:'orange-500', ringD:'orange-300' },
-  blue:   { priL:'blue-600',   priD:'blue-400',   pfL:'blue-50',    pfD:'blue-950',  ringL:'blue-500',   ringD:'blue-300'   },
-  green:  { priL:'green-700',  priD:'green-400',  pfL:'green-50',   pfD:'green-950', ringL:'green-500',  ringD:'green-300'  },
-  violet: { priL:'violet-600', priD:'violet-400', pfL:'violet-50',  pfD:'violet-950',ringL:'violet-500', ringD:'violet-300' },
-  yellow: { priL:'yellow-500', priD:'yellow-300', pfL:'yellow-950', pfD:'yellow-950',ringL:'yellow-500', ringD:'yellow-300' },
-  red:    { priL:'red-600',    priD:'red-400',    pfL:'red-50',     pfD:'red-950',   ringL:'red-500',    ringD:'red-300'    },
-};
+// ─── Semantic Tokens (role-based) ─────────────────────────────────────────────
+// Roles: neutral, primary, destructive, success, warning, info
+var DEFAULT_ROLES = { neutral:'zinc', primary:'zinc', destructive:'red', success:'green', warning:'amber', info:'sky' };
+var ACTIVE_COLORS = []; // Set by the generate handler — list of selected color keys
 
-function getSemanticTokens(theme) {
-  var n = ['zinc','slate','stone','gray','neutral'].indexOf(theme) !== -1 ? theme : 'zinc';
-  var cp = COLORED_PRIMARIES[theme];
-  var priL  = cp ? cp.priL  : n + '-900';
-  var priD  = cp ? cp.priD  : n + '-50';
-  var pfL   = cp ? cp.pfL   : n + '-50';
-  var pfD   = cp ? cp.pfD   : n + '-900';
-  var ringL = cp ? cp.ringL : n + '-900';
-  var ringD = cp ? cp.ringD : n + '-300';
+function getSemanticTokens(roles) {
+  roles = roles || DEFAULT_ROLES;
+  var n = roles.neutral     || 'zinc';
+  var p = roles.primary     || n;
+  var d = roles.destructive || 'red';
+  var s = roles.success     || 'green';
+  var w = roles.warning     || 'amber';
+  var i = roles.info        || 'sky';
   return {
     'background':             { light:'white',    dark: n+'-950' },
     'foreground':             { light:n+'-950',   dark: n+'-50'  },
@@ -55,28 +46,100 @@ function getSemanticTokens(theme) {
     'card-foreground':        { light:n+'-950',   dark: n+'-50'  },
     'popover':                { light:'white',    dark: n+'-950' },
     'popover-foreground':     { light:n+'-950',   dark: n+'-50'  },
-    'primary':                { light:priL,       dark: priD     },
-    'primary-foreground':     { light:pfL,        dark: pfD      },
+    'primary':                { light:p+'-600',   dark: p+'-400' },
+    'primary-foreground':     { light:p+'-50',    dark: p+'-950' },
     'secondary':              { light:n+'-100',   dark: n+'-800' },
     'secondary-foreground':   { light:n+'-900',   dark: n+'-50'  },
     'muted':                  { light:n+'-100',   dark: n+'-800' },
     'muted-foreground':       { light:n+'-500',   dark: n+'-400' },
     'accent':                 { light:n+'-100',   dark: n+'-800' },
     'accent-foreground':      { light:n+'-900',   dark: n+'-50'  },
-    'destructive':            { light:'red-500',  dark:'red-900' },
+    'destructive':            { light:d+'-500',   dark: d+'-900' },
     'destructive-foreground': { light:n+'-50',    dark: n+'-50'  },
+    'success':                { light:s+'-500',   dark: s+'-400' },
+    'success-foreground':     { light:s+'-50',    dark: s+'-950' },
+    'warning':                { light:w+'-500',   dark: w+'-300' },
+    'warning-foreground':     { light:w+'-950',   dark: w+'-950' },
+    'info':                   { light:i+'-500',   dark: i+'-400' },
+    'info-foreground':        { light:i+'-50',    dark: i+'-950' },
     'border':                 { light:n+'-200',   dark: n+'-800' },
     'input':                  { light:n+'-200',   dark: n+'-800' },
-    'ring':                   { light:ringL,      dark: ringD    },
-    'chart-1':                { light:'orange-500',dark:'orange-400' },
-    'chart-2':                { light:'teal-500',  dark:'teal-400'   },
-    'chart-3':                { light:'blue-500',  dark:'blue-400'   },
-    'chart-4':                { light:'violet-500',dark:'violet-400' },
-    'chart-5':                { light:'red-500',   dark:'red-400'    },
+    'ring':                   { light:p+'-500',   dark: p+'-300' },
+    'primary-hover':          { light:p+'-700',   dark: p+'-200' },
+    'destructive-hover':      { light:d+'-600',   dark: d+'-800' },
+    'secondary-hover':        { light:n+'-200',   dark: n+'-700' },
+    'disabled':               { light:n+'-200',   dark: n+'-700' },
+    'disabled-foreground':    { light:n+'-400',   dark: n+'-500' },
+    'chart-1':                { light:p+'-500',   dark: p+'-400' },
+    'chart-2':                { light:s+'-500',   dark: s+'-400' },
+    'chart-3':                { light:i+'-500',   dark: i+'-400' },
+    'chart-4':                { light:w+'-500',   dark: w+'-400' },
+    'chart-5':                { light:d+'-500',   dark: d+'-400' },
   };
 }
-// Keep a fallback for any code that still references SEMANTIC_TOKENS directly
-var SEMANTIC_TOKENS = getSemanticTokens('zinc');
+function getImprovedSemanticTokens(roles) {
+  roles = roles || DEFAULT_ROLES;
+  var n = roles.neutral     || 'zinc';
+  var p = roles.primary     || n;
+  var d = roles.destructive || 'red';
+  var s = roles.success     || 'green';
+  var w = roles.warning     || 'amber';
+  var i = roles.info        || 'sky';
+  return {
+    // ── fg/ (foreground) ──
+    'fg/over-theme':      { light:p+'-50',   dark: p+'-950' },
+    'fg/over-primary':    { light:'white',    dark: n+'-950' },
+    'fg/link':            { light:p+'-700',   dark: p+'-300' },
+    'fg/highlight-1':     { light:p+'-600',   dark: p+'-400' },
+    'fg/highlight-2':     { light:p+'-500',   dark: p+'-300' },
+    'fg/highlight-3':     { light:p+'-700',   dark: p+'-200' },
+    'fg/neutral-1':       { light:n+'-950',   dark: n+'-50'  },
+    'fg/neutral-2':       { light:n+'-700',   dark: n+'-300' },
+    'fg/neutral-3':       { light:n+'-500',   dark: n+'-400' },
+    'fg/neutral-4':       { light:n+'-400',   dark: n+'-500' },
+    'fg/neutral-5':       { light:n+'-300',   dark: n+'-600' },
+    'fg/brand':           { light:p+'-600',   dark: p+'-800' },
+    'fg/alert-1':         { light:w+'-600',   dark: w+'-400' },
+    'fg/alert-2':         { light:w+'-500',   dark: w+'-300' },
+    'fg/destructive-1':   { light:d+'-600',   dark: d+'-400' },
+    'fg/destructive-2':   { light:d+'-500',   dark: d+'-300' },
+    'fg/destructive-3':   { light:d+'-700',   dark: d+'-200' },
+    'fg/info-1':          { light:i+'-600',   dark: i+'-400' },
+    'fg/positive-1':      { light:s+'-600',   dark: s+'-400' },
+
+    // ── bg/ (background) ──
+    'bg/no-bg':           { light:'transparent', dark: 'transparent' },
+    'bg/highlight':       { light:p+'-600',   dark: p+'-400' },
+    'bg/highlight-2':     { light:p+'-100',   dark: p+'-900' },
+    'bg/highlight-3':     { light:p+'-50',    dark: p+'-950' },
+    'bg/highlight-4':     { light:p+'-700',   dark: p+'-200' },
+    'bg/level-inverse':   { light:n+'-800',   dark: n+'-200' },
+    'bg/neutral':         { light:'white',    dark: n+'-950' },
+    'bg/neutral-2':       { light:n+'-50',    dark: n+'-900' },
+    'bg/neutral-3':       { light:n+'-100',   dark: n+'-800' },
+    'bg/brand-1':         { light:p+'-600',   dark: p+'-500' },
+    'bg/brand-2':         { light:p+'-50',    dark: p+'-950' },
+    'bg/alert-1':         { light:w+'-100',   dark: w+'-900' },
+    'bg/destructive-1':   { light:d+'-500',   dark: d+'-900' },
+    'bg/destructive-2':   { light:d+'-100',   dark: d+'-900' },
+    'bg/destructive-3':   { light:d+'-50',    dark: d+'-950' },
+    'bg/info-1':          { light:i+'-100',   dark: i+'-900' },
+    'bg/positive-1':      { light:s+'-100',   dark: s+'-900' },
+
+    // ── border/ ──
+    'border/highlight':   { light:p+'-300',   dark: p+'-700' },
+    'border/highlight-2': { light:p+'-200',   dark: p+'-800' },
+    'border/neutral':     { light:n+'-200',   dark: n+'-800' },
+    'border/neutral-2':   { light:n+'-300',   dark: n+'-700' },
+    'border/destructive': { light:d+'-300',   dark: d+'-700' },
+    'border/alert':       { light:w+'-300',   dark: w+'-700' },
+    'border/info':        { light:i+'-300',   dark: i+'-700' },
+    'border/positive':    { light:s+'-300',   dark: s+'-700' },
+
+  };
+}
+
+var SEMANTIC_TOKENS = getSemanticTokens(DEFAULT_ROLES);
 
 // ─── Component Token Definitions ─────────────────────────────────────────────
 var COMPONENT_DEFINITIONS = {
@@ -85,10 +148,10 @@ var COMPONENT_DEFINITIONS = {
     tokens: {
       'button/default/background':           {light:'alias:primary',               dark:'alias:primary'},
       'button/default/foreground':           {light:'alias:primary-foreground',    dark:'alias:primary-foreground'},
-      'button/default/hover-background':     {light:'zinc-700',                    dark:'zinc-200'},
+      'button/default/hover-background':     {light:'alias:primary-hover',         dark:'alias:primary-hover'},
       'button/destructive/background':       {light:'alias:destructive',           dark:'alias:destructive'},
       'button/destructive/foreground':       {light:'alias:destructive-foreground',dark:'alias:destructive-foreground'},
-      'button/destructive/hover-background': {light:'red-600',                     dark:'red-800'},
+      'button/destructive/hover-background': {light:'alias:destructive-hover',     dark:'alias:destructive-hover'},
       'button/outline/background':           {light:'alias:background',            dark:'alias:background'},
       'button/outline/foreground':           {light:'alias:foreground',            dark:'alias:foreground'},
       'button/outline/border':               {light:'alias:border',                dark:'alias:border'},
@@ -96,13 +159,13 @@ var COMPONENT_DEFINITIONS = {
       'button/outline/hover-foreground':     {light:'alias:accent-foreground',     dark:'alias:accent-foreground'},
       'button/secondary/background':         {light:'alias:secondary',             dark:'alias:secondary'},
       'button/secondary/foreground':         {light:'alias:secondary-foreground',  dark:'alias:secondary-foreground'},
-      'button/secondary/hover-background':   {light:'zinc-200',                    dark:'zinc-700'},
+      'button/secondary/hover-background':   {light:'alias:secondary-hover',       dark:'alias:secondary-hover'},
       'button/ghost/background':             {light:'transparent',                 dark:'transparent'},
       'button/ghost/foreground':             {light:'alias:foreground',            dark:'alias:foreground'},
       'button/ghost/hover-background':       {light:'alias:accent',                dark:'alias:accent'},
       'button/ghost/hover-foreground':       {light:'alias:accent-foreground',     dark:'alias:accent-foreground'},
       'button/link/foreground':              {light:'alias:primary',               dark:'alias:primary'},
-      'button/link/hover-foreground':        {light:'zinc-700',                    dark:'zinc-200'},
+      'button/link/hover-foreground':        {light:'alias:muted-foreground',      dark:'alias:muted-foreground'},
     }
   },
   formfield: { name:'Form Field', group:'Forms',
@@ -122,8 +185,8 @@ var COMPONENT_DEFINITIONS = {
       'input/text':                {light:'alias:foreground',       dark:'alias:foreground'},
       'input/placeholder':         {light:'alias:muted-foreground', dark:'alias:muted-foreground'},
       'input/ring':                {light:'alias:ring',             dark:'alias:ring'},
-      'input/disabled-background': {light:'zinc-100',               dark:'zinc-800'},
-      'input/disabled-text':       {light:'zinc-400',               dark:'zinc-600'},
+      'input/disabled-background': {light:'alias:muted',             dark:'alias:muted'},
+      'input/disabled-text':       {light:'alias:disabled-foreground', dark:'alias:disabled-foreground'},
     }
   },
   switch: { name:'Switch', group:'Forms',
@@ -131,8 +194,8 @@ var COMPONENT_DEFINITIONS = {
       'switch/track-checked':   {light:'alias:primary', dark:'alias:primary'},
       'switch/track-unchecked': {light:'alias:input',   dark:'alias:input'},
       'switch/thumb':           {light:'white',          dark:'white'},
-      'switch/disabled-track':  {light:'zinc-200',       dark:'zinc-700'},
-      'switch/disabled-thumb':  {light:'zinc-400',       dark:'zinc-500'},
+      'switch/disabled-track':  {light:'alias:disabled',             dark:'alias:disabled'},
+      'switch/disabled-thumb':  {light:'alias:disabled-foreground', dark:'alias:disabled-foreground'},
     }
   },
   checkbox: { name:'Checkbox', group:'Forms',
@@ -141,7 +204,7 @@ var COMPONENT_DEFINITIONS = {
       'checkbox/background-default':  {light:'alias:background',         dark:'alias:background'},
       'checkbox/border':              {light:'alias:primary',            dark:'alias:primary'},
       'checkbox/indicator':           {light:'alias:primary-foreground', dark:'alias:primary-foreground'},
-      'checkbox/disabled':            {light:'zinc-200',                  dark:'zinc-700'},
+      'checkbox/disabled':            {light:'alias:disabled',             dark:'alias:disabled'},
     }
   },
   select: { name:'Select', group:'Forms',
@@ -171,7 +234,7 @@ var COMPONENT_DEFINITIONS = {
       'radio/indicator':  {light:'alias:primary',    dark:'alias:primary'},
       'radio/border':     {light:'alias:primary',    dark:'alias:primary'},
       'radio/background': {light:'alias:background', dark:'alias:background'},
-      'radio/disabled':   {light:'zinc-200',          dark:'zinc-700'},
+      'radio/disabled':   {light:'alias:disabled',     dark:'alias:disabled'},
     }
   },
   slider: { name:'Slider', group:'Forms',
@@ -360,18 +423,38 @@ function removeExistingCollection(name) {
 }
 
 // ─── Variable Collections ─────────────────────────────────────────────────────
-function createPrimitivesCollection() {
+function createPrimitivesCollection(selectedColors, opacitySteps) {
   removeExistingCollection('Primitives');
   var col = figma.variables.createVariableCollection('Primitives');
   var mid = col.defaultModeId;
   col.renameMode(mid, 'Default');
   var map = {};
-  Object.keys(TW_COLORS).forEach(function(name) {
-    Object.keys(TW_COLORS[name]).forEach(function(shade) {
+  // Only include selected colors (fallback to all if none specified)
+  var colorKeys = selectedColors && selectedColors.length > 0
+    ? selectedColors.filter(function(k) { return TW_COLORS[k]; })
+    : Object.keys(TW_COLORS);
+  colorKeys.forEach(function(name) {
+    var shades = Object.keys(TW_COLORS[name]);
+    shades.forEach(function(shade) {
+      var hex = TW_COLORS[name][shade];
       var v = figma.variables.createVariable(name+'/'+shade, col, 'COLOR');
-      v.setValueForMode(mid, hexToRgba(TW_COLORS[name][shade]));
+      v.setValueForMode(mid, hexToRgba(hex));
+      v.scopes = ['ALL_FILLS', 'STROKE_COLOR'];
       map[name+'-'+shade] = v.id;
     });
+    // Opacity variants for this color
+    if (opacitySteps && opacitySteps.length > 0) {
+      shades.forEach(function(shade) {
+        var hex = TW_COLORS[name][shade];
+        opacitySteps.forEach(function(step) {
+          var varName = name+'/'+shade+'/'+step;
+          var v = figma.variables.createVariable(varName, col, 'COLOR');
+          v.setValueForMode(mid, hexToRgba(hex, step / 100));
+          v.scopes = ['ALL_FILLS', 'STROKE_COLOR'];
+          map[name+'-'+shade+'-'+step] = v.id;
+        });
+      });
+    }
   });
   var black = figma.variables.createVariable('black', col, 'COLOR');
   black.setValueForMode(mid, {r:0,g:0,b:0,a:1});
@@ -382,14 +465,18 @@ function createPrimitivesCollection() {
   return { collection:col, variableMap:map };
 }
 
-function createThemeCollection(primMap, theme) {
-  removeExistingCollection('shadcn / Themes');
-  var col = figma.variables.createVariableCollection('shadcn / Themes');
+function createThemeCollection(primMap, roles, tokenStructure) {
+  removeExistingCollection('Themes');
+  removeExistingCollection('Ale/Themes');
+  var colName = tokenStructure === 'improved' ? 'Ale/Themes' : 'Themes';
+  var col = figma.variables.createVariableCollection(colName);
   var lightId = col.defaultModeId;
   col.renameMode(lightId, 'Light');
   var darkId = col.addMode('Dark');
   var map = {};
-  var tokens = getSemanticTokens(theme || 'zinc');
+  var tokens = tokenStructure === 'improved'
+    ? getImprovedSemanticTokens(roles)
+    : getSemanticTokens(roles);
   Object.keys(tokens).forEach(function(name) {
     var def = tokens[name];
     var v   = figma.variables.createVariable(name, col, 'COLOR');
@@ -404,7 +491,8 @@ function createThemeCollection(primMap, theme) {
   return { collection:col, variableMap:map, lightModeId:lightId, darkModeId:darkId };
 }
 
-function createSizingCollection() {
+function createSizingCollection(opts) {
+  opts = opts || {};
   removeExistingCollection('Sizing');
   var col = figma.variables.createVariableCollection('Sizing');
   var mid = col.defaultModeId;
@@ -417,28 +505,105 @@ function createSizingCollection() {
   }
 
   // Font sizes (px)
-  [['xs',12],['sm',14],['base',16],['lg',18],['xl',20],['2xl',24],['3xl',30],['4xl',36],['5xl',48],['6xl',60],['7xl',72],['8xl',96],['9xl',128]].forEach(function(p) {
-    makeFloat('font-size/' + p[0], p[1], ['FONT_SIZE', 'LINE_HEIGHT', 'LETTER_SPACING', 'PARAGRAPH_SPACING', 'PARAGRAPH_INDENT']);
-  });
+  if (opts.includeFontSizes !== false) {
+    [['xs',12],['sm',14],['base',16],['lg',18],['xl',20],['2xl',24],['3xl',30],['4xl',36],['5xl',48],['6xl',60],['7xl',72],['8xl',96],['9xl',128]].forEach(function(p) {
+      makeFloat('font-size/' + p[0], p[1], ['FONT_SIZE', 'LINE_HEIGHT', 'LETTER_SPACING', 'PARAGRAPH_SPACING', 'PARAGRAPH_INDENT']);
+    });
+  }
 
   // Border radius (px)
-  [['none',0],['sm',2],['DEFAULT',4],['md',6],['lg',8],['xl',12],['2xl',16],['3xl',24],['full',9999]].forEach(function(p) {
-    makeFloat('radius/' + p[0], p[1], ['CORNER_RADIUS']);
-  });
+  if (opts.includeRadius !== false) {
+    [['none',0],['sm',2],['DEFAULT',4],['md',6],['lg',8],['xl',12],['2xl',16],['3xl',24],['full',9999]].forEach(function(p) {
+      makeFloat('radius/' + p[0], p[1], ['CORNER_RADIUS']);
+    });
+  }
 
   // Border width (px)
-  [['0',0],['DEFAULT',1],['2',2],['4',4],['8',8]].forEach(function(p) {
-    makeFloat('border-width/' + p[0], p[1], ['STROKE_FLOAT']);
-  });
+  if (opts.includeBorderWidth !== false) {
+    [['0',0],['DEFAULT',1],['2',2],['4',4],['8',8]].forEach(function(p) {
+      makeFloat('border-width/' + p[0], p[1], ['STROKE_FLOAT']);
+    });
+  }
 
   // Spacing (px) — used for padding, gap, and sizing
-  [['0',0],['px',1],['0-5',2],['1',4],['1-5',6],['2',8],['2-5',10],['3',12],['3-5',14],['4',16],['5',20],['6',24],['7',28],['8',32],['9',36],['10',40],['11',44],['12',48],['14',56],['16',64],['20',80],['24',96],['28',112],['32',128],['36',144],['40',160],['44',176],['48',192],['52',208],['56',224],['60',240],['64',256],['72',288],['80',320],['96',384]].forEach(function(p) {
-    makeFloat('spacing/' + p[0], p[1], ['WIDTH_HEIGHT', 'GAP']);
-  });
+  if (opts.includeSpacing !== false) {
+    [['0',0],['px',1],['0-5',2],['1',4],['1-5',6],['2',8],['2-5',10],['3',12],['3-5',14],['4',16],['5',20],['6',24],['7',28],['8',32],['9',36],['10',40],['11',44],['12',48],['14',56],['16',64],['20',80],['24',96],['28',112],['32',128],['36',144],['40',160],['44',176],['48',192],['52',208],['56',224],['60',240],['64',256],['72',288],['80',320],['96',384]].forEach(function(p) {
+      makeFloat('spacing/' + p[0], p[1], ['WIDTH_HEIGHT', 'GAP']);
+    });
+  }
 
   // Opacity (0–1)
-  [0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100].forEach(function(n) {
-    makeFloat('opacity/' + n, n / 100, ['OPACITY']);
+  if (opts.includeOpacityVars !== false) {
+    [0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100].forEach(function(n) {
+      makeFloat('opacity/' + n, n / 100, ['OPACITY']);
+    });
+  }
+}
+
+// ─── Shadow Effect Styles ──────────────────────────────────────────────────
+function createShadowStyles() {
+  // Remove existing shadow styles
+  figma.getLocalEffectStyles().forEach(function(s) {
+    if (s.name.indexOf('shadow/') === 0) s.remove();
+  });
+
+  var shadows = [
+    { name: 'shadow/sm', effects: [
+      { type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.05}, offset:{x:0,y:1}, radius:2, spread:0, visible:true, blendMode:'NORMAL' }
+    ]},
+    { name: 'shadow/DEFAULT', effects: [
+      { type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.1}, offset:{x:0,y:1}, radius:3, spread:0, visible:true, blendMode:'NORMAL' },
+      { type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.1}, offset:{x:0,y:1}, radius:2, spread:-1, visible:true, blendMode:'NORMAL' }
+    ]},
+    { name: 'shadow/md', effects: [
+      { type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.1}, offset:{x:0,y:4}, radius:6, spread:-1, visible:true, blendMode:'NORMAL' },
+      { type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.1}, offset:{x:0,y:2}, radius:4, spread:-2, visible:true, blendMode:'NORMAL' }
+    ]},
+    { name: 'shadow/lg', effects: [
+      { type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.1}, offset:{x:0,y:10}, radius:15, spread:-3, visible:true, blendMode:'NORMAL' },
+      { type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.1}, offset:{x:0,y:4}, radius:6, spread:-4, visible:true, blendMode:'NORMAL' }
+    ]},
+    { name: 'shadow/xl', effects: [
+      { type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.1}, offset:{x:0,y:20}, radius:25, spread:-5, visible:true, blendMode:'NORMAL' },
+      { type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.1}, offset:{x:0,y:8}, radius:10, spread:-6, visible:true, blendMode:'NORMAL' }
+    ]},
+    { name: 'shadow/2xl', effects: [
+      { type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.25}, offset:{x:0,y:25}, radius:50, spread:-12, visible:true, blendMode:'NORMAL' }
+    ]},
+    { name: 'shadow/inner', effects: [
+      { type:'INNER_SHADOW', color:{r:0,g:0,b:0,a:0.05}, offset:{x:0,y:2}, radius:4, spread:0, visible:true, blendMode:'NORMAL' }
+    ]},
+  ];
+
+  shadows.forEach(function(s) {
+    var style = figma.createEffectStyle();
+    style.name = s.name;
+    style.effects = s.effects;
+  });
+}
+
+// ─── Text Styles ───────────────────────────────────────────────────────────
+async function createTextStyles(fontFamily) {
+  // Remove existing text styles generated by us
+  figma.getLocalTextStyles().forEach(function(s) {
+    if (s.name.indexOf('text/') === 0) s.remove();
+  });
+
+  var sizes = [
+    ['xs',12,16],['sm',14,20],['base',16,24],['lg',18,28],['xl',20,28],
+    ['2xl',24,32],['3xl',30,36],['4xl',36,40],['5xl',48,48],
+    ['6xl',60,60],['7xl',72,72],['8xl',96,96],['9xl',128,128]
+  ];
+
+  var font = { family: fontFamily || 'Inter', style: 'Regular' };
+  try { await figma.loadFontAsync(font); } catch(e) { font = { family:'Inter', style:'Regular' }; }
+
+  sizes.forEach(function(s) {
+    var style = figma.createTextStyle();
+    style.name = 'text/' + s[0];
+    style.fontName = font;
+    style.fontSize = s[1];
+    style.lineHeight = { value: s[2], unit: 'PIXELS' };
   });
 }
 
@@ -596,13 +761,25 @@ function buildVarCache() {
 }
 
 // Returns a SOLID paint, bound to a variable if found, else fallback hex
-function vp(tokenName, fallbackHex) {
+// tokenName can be a theme token ('primary') or component token ('button/default/background').
+// Tries exact match first. If a compToken (3rd arg) is given, tries that first.
+function vp(tokenName, fallbackHex, compToken) {
   var c = fallbackHex ? rgb(fallbackHex) : { r:0.5, g:0.5, b:0.5 };
   var base = { type:'SOLID', color:c };
-  if (VAR_CACHE && tokenName && VAR_CACHE[tokenName]) {
-    return figma.variables.setBoundVariableForPaint(base, 'color', VAR_CACHE[tokenName]);
+  if (VAR_CACHE) {
+    if (compToken && VAR_CACHE[compToken]) {
+      return figma.variables.setBoundVariableForPaint(base, 'color', VAR_CACHE[compToken]);
+    }
+    if (tokenName && VAR_CACHE[tokenName]) {
+      return figma.variables.setBoundVariableForPaint(base, 'color', VAR_CACHE[tokenName]);
+    }
   }
   return base;
+}
+
+// Convenience: bind to component token if available, else theme token
+function cvp(compToken, themeToken, fallbackHex) {
+  return vp(themeToken, fallbackHex, compToken);
 }
 
 // Bind a FLOAT variable to a node property (cornerRadius, fontSize, padding, etc.)
@@ -875,12 +1052,12 @@ function layoutSet(set, gap) {
 
 function buildButtonPage(page) {
   var variants = [
-    { key:'default',     label:'Default',     bg:'#18181b', fg:'#fafafa', hBg:'#3f3f46', hFg:null,     border:null,      bgTok:'button/default/background',     fgTok:'button/default/foreground',     hBgTok:'button/default/hover-background'                                                    },
-    { key:'destructive', label:'Destructive', bg:'#ef4444', fg:'#fafafa', hBg:'#dc2626', hFg:null,     border:null,      bgTok:'button/destructive/background',  fgTok:'button/destructive/foreground',  hBgTok:'button/destructive/hover-background'                                                },
-    { key:'outline',     label:'Outline',     bg:'#ffffff', fg:'#18181b', hBg:'#f4f4f5', hFg:'#18181b',border:'#e4e4e7', bgTok:'button/outline/background',     fgTok:'button/outline/foreground',     hBgTok:'button/outline/hover-background',  brdTok:'button/outline/border', hFgTok:'button/outline/hover-foreground' },
-    { key:'secondary',   label:'Secondary',   bg:'#f4f4f5', fg:'#18181b', hBg:'#e4e4e7', hFg:null,     border:null,      bgTok:'button/secondary/background',   fgTok:'button/secondary/foreground',   hBgTok:'button/secondary/hover-background'                                                  },
-    { key:'ghost',       label:'Ghost',       bg:null,      fg:'#18181b', hBg:'#f4f4f5', hFg:null,     border:null,      bgTok:'button/ghost/background',       fgTok:'button/ghost/foreground',       hBgTok:'button/ghost/hover-background',                               hFgTok:'button/ghost/hover-foreground'    },
-    { key:'link',        label:'Link',        bg:null,      fg:'#18181b', hBg:null,       hFg:'#3f3f46',border:null,      bgTok:null,                            fgTok:'button/link/foreground',        hBgTok:null,                                                           hFgTok:'button/link/hover-foreground'     },
+    { key:'default',     label:'Default',     bg:'#18181b', fg:'#fafafa', hBg:'#3f3f46', hFg:null,     border:null,      bgTok:'primary',              fgTok:'primary-foreground',     hBgTok:'primary-hover',                                                     cBg:'button/default/background',      cFg:'button/default/foreground',      cHBg:'button/default/hover-background' },
+    { key:'destructive', label:'Destructive', bg:'#ef4444', fg:'#fafafa', hBg:'#dc2626', hFg:null,     border:null,      bgTok:'destructive',           fgTok:'destructive-foreground', hBgTok:'destructive-hover',                                                 cBg:'button/destructive/background',  cFg:'button/destructive/foreground',  cHBg:'button/destructive/hover-background' },
+    { key:'outline',     label:'Outline',     bg:'#ffffff', fg:'#18181b', hBg:'#f4f4f5', hFg:'#18181b',border:'#e4e4e7', bgTok:'background',            fgTok:'foreground',             hBgTok:'accent',            brdTok:'border', hFgTok:'accent-foreground',  cBg:'button/outline/background',      cFg:'button/outline/foreground',      cHBg:'button/outline/hover-background',   cBrd:'button/outline/border', cHFg:'button/outline/hover-foreground' },
+    { key:'secondary',   label:'Secondary',   bg:'#f4f4f5', fg:'#18181b', hBg:'#e4e4e7', hFg:null,     border:null,      bgTok:'secondary',             fgTok:'secondary-foreground',   hBgTok:'secondary-hover',                                                   cBg:'button/secondary/background',    cFg:'button/secondary/foreground',    cHBg:'button/secondary/hover-background' },
+    { key:'ghost',       label:'Ghost',       bg:null,      fg:'#18181b', hBg:'#f4f4f5', hFg:null,     border:null,      bgTok:null,                    fgTok:'foreground',             hBgTok:'accent',                             hFgTok:'accent-foreground',                                            cFg:'button/ghost/foreground',        cHBg:'button/ghost/hover-background',     cHFg:'button/ghost/hover-foreground' },
+    { key:'link',        label:'Link',        bg:null,      fg:'#18181b', hBg:null,       hFg:'#3f3f46',border:null,      bgTok:null,                    fgTok:'primary',                hBgTok:null,                                 hFgTok:'primary-hover',                                                cFg:'button/link/foreground',                                                    cHFg:'button/link/hover-foreground' },
   ];
   // Sizes: width, height and font scale relative to the active style
   var sizes = [
@@ -912,14 +1089,14 @@ function buildButtonPage(page) {
 
         var bgPaint;
         if (state === 'Hover' && v.hBgTok) {
-          bgPaint = vp(v.hBgTok, v.hBg || v.bg || '#f4f4f5');
+          bgPaint = vp(v.hBgTok, v.hBg || v.bg || '#f4f4f5', v.cHBg);
         } else if (v.bgTok) {
-          bgPaint = vp(v.bgTok, v.bg || '#ffffff');
+          bgPaint = vp(v.bgTok, v.bg || '#ffffff', v.cBg);
         }
         comp.fills = bgPaint ? [bgPaint] : [];
 
         if (v.border) {
-          comp.strokes = [vp(v.brdTok || '', v.border)];
+          comp.strokes = [vp(v.brdTok || '', v.border, v.cBrd)];
           comp.strokeWeight = 1;
           comp.strokeAlign = 'INSIDE';
         }
@@ -948,10 +1125,10 @@ function buildButtonPage(page) {
           t.fontSize = sz.fz;
           t.fontName = fontName('Medium');
           var fgHex = v.fg || '#18181b';
-          var fgTok;
-          if (state === 'Hover' && v.hFgTok) { fgTok = v.hFgTok; fgHex = v.hFg || fgHex; }
-          else { fgTok = v.fgTok; }
-          t.fills = [vp(fgTok || '', fgHex)];
+          var fgTok, cFgTok;
+          if (state === 'Hover' && v.hFgTok) { fgTok = v.hFgTok; fgHex = v.hFg || fgHex; cFgTok = v.cHFg; }
+          else { fgTok = v.fgTok; cFgTok = v.cFg; }
+          t.fills = [vp(fgTok || '', fgHex, cFgTok)];
           comp.appendChild(t);
           t.layoutSizingHorizontal = 'HUG';
           t.layoutSizingVertical = 'HUG';
@@ -1061,10 +1238,10 @@ function buildButtonGroupPage(page) {
 
 function buildLabelPage(page) {
   var defs = [
-    { label:'Default',  text:'Label',            suffix:null,        suffixColor:null,      textTok:'label/foreground',  opacity:1   },
-    { label:'Required', text:'Label',             suffix:' *',        suffixColor:'#ef4444', textTok:'label/foreground',  opacity:1   },
-    { label:'Optional', text:'Label',             suffix:' Optional', suffixColor:'#a1a1aa', textTok:'label/foreground',  opacity:1   },
-    { label:'Disabled', text:'Label',             suffix:null,        suffixColor:null,      textTok:'label/muted',       opacity:0.6 },
+    { label:'Default',  text:'Label',            suffix:null,        suffixColor:null,      textTok:'foreground',  opacity:1   },
+    { label:'Required', text:'Label',             suffix:' *',        suffixColor:'#ef4444', textTok:'foreground',  opacity:1   },
+    { label:'Optional', text:'Label',             suffix:' Optional', suffixColor:'#a1a1aa', textTok:'foreground',  opacity:1   },
+    { label:'Disabled', text:'Label',             suffix:null,        suffixColor:null,      textTok:'muted-foreground',       opacity:0.6 },
   ];
   var allComps = [];
   defs.forEach(function(d) {
@@ -1083,7 +1260,7 @@ function buildLabelPage(page) {
     t.characters = d.text;
     t.fontSize = S.fontSize;
     t.fontName = fontName('Medium');
-    t.fills = [vp(d.textTok, '#18181b')];
+    t.fills = [cvp(d.textTok === 'foreground' ? 'label/foreground' : 'label/muted', d.textTok, '#18181b')];
     comp.appendChild(t);
     t.layoutSizingHorizontal = 'HUG';
     t.layoutSizingVertical = 'HUG';
@@ -1094,8 +1271,8 @@ function buildLabelPage(page) {
       s.fontSize = S.fontSize;
       s.fontName = d.label === 'Required' ? fontName('Medium') : fontName('Regular');
       s.fills = [d.label === 'Required'
-        ? vp('label/required', d.suffixColor)
-        : vp('label/muted', d.suffixColor)];
+        ? cvp('label/required', 'destructive', d.suffixColor)
+        : cvp('label/muted', 'muted-foreground', d.suffixColor)];
       comp.appendChild(s);
       s.layoutSizingHorizontal = 'HUG';
       s.layoutSizingVertical = 'HUG';
@@ -1135,7 +1312,7 @@ function buildFormFieldPage(page) {
     t.characters = labelText;
     t.fontSize = S.fontSize;
     t.fontName = fontName('Medium');
-    t.fills = [vp(labelState === 'Disabled' ? 'label/muted' : 'label/foreground', '#18181b')];
+    t.fills = [vp(labelState === 'Disabled' ? 'muted-foreground' : 'foreground', '#18181b')];
     return t;
   }
 
@@ -1169,7 +1346,7 @@ function buildFormFieldPage(page) {
     hlp.characters = helperText;
     hlp.fontSize = helperFz;
     hlp.fontName = fontName('Regular');
-    hlp.fills = [vp(isError ? 'label/required' : 'label/muted', isError ? '#ef4444' : '#a1a1aa')];
+    hlp.fills = [vp(isError ? 'destructive' : 'muted-foreground', isError ? '#ef4444' : '#a1a1aa')];
     comp.appendChild(hlp);
     hlp.layoutSizingHorizontal = 'HUG';
     hlp.layoutSizingVertical = 'HUG';
@@ -1210,7 +1387,7 @@ function buildFormFieldPage(page) {
     lbl.characters = labelText;
     lbl.fontSize = S.fontSize;
     lbl.fontName = fontName('Medium');
-    lbl.fills = [vp(disabled ? 'label/muted' : 'label/foreground', disabled ? '#a1a1aa' : '#18181b')];
+    lbl.fills = [vp(disabled ? 'muted-foreground' : 'foreground', disabled ? '#a1a1aa' : '#18181b')];
     textGroup.appendChild(lbl);
     lbl.layoutSizingHorizontal = 'HUG';
     lbl.layoutSizingVertical = 'HUG';
@@ -1219,7 +1396,7 @@ function buildFormFieldPage(page) {
     desc.characters = descText;
     desc.fontSize = helperFz;
     desc.fontName = fontName('Regular');
-    desc.fills = [vp('label/muted', '#a1a1aa')];
+    desc.fills = [vp('muted-foreground', '#a1a1aa')];
     textGroup.appendChild(desc);
     desc.layoutSizingHorizontal = 'HUG';
     desc.layoutSizingVertical = 'HUG';
@@ -1327,11 +1504,11 @@ function buildFormFieldPage(page) {
 
 function buildInputPage(page) {
   var defs = [
-    { label:'Default',  bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'Placeholder text',   phColor:'#a1a1aa', bgTok:'input/background', brdTok:'input/border',    phTok:'input/placeholder' },
-    { label:'Focus',    bg:'#ffffff', border:'#18181b', sw:2, ph:'Focused input',       phColor:'#a1a1aa', bgTok:'input/background', brdTok:'input/ring',      phTok:'input/placeholder' },
-    { label:'Filled',   bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'user@example.com',   phColor:'#18181b', bgTok:'input/background', brdTok:'input/border',    phTok:'input/text'        },
-    { label:'Error',    bg:'#ffffff', border:'#ef4444', sw:1, ph:'invalid@',            phColor:'#18181b', bgTok:'input/background', brdTok:'',                phTok:'input/text'        },
-    { label:'Disabled', bg:'#f4f4f5', border:'#e4e4e7', sw:1, ph:'Disabled input',     phColor:'#a1a1aa', bgTok:'input/disabled-background', brdTok:'input/border', phTok:'input/disabled-text', opacity:0.6 },
+    { label:'Default',  bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'Placeholder text',   phColor:'#a1a1aa', bgTok:'background', brdTok:'input',    phTok:'muted-foreground', cBg:'input/background', cBrd:'input/border', cPh:'input/placeholder' },
+    { label:'Focus',    bg:'#ffffff', border:'#18181b', sw:2, ph:'Focused input',       phColor:'#a1a1aa', bgTok:'background', brdTok:'ring',      phTok:'muted-foreground', cBg:'input/background', cBrd:'input/ring', cPh:'input/placeholder' },
+    { label:'Filled',   bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'user@example.com',   phColor:'#18181b', bgTok:'background', brdTok:'input',    phTok:'foreground',        cBg:'input/background', cBrd:'input/border', cPh:'input/text' },
+    { label:'Error',    bg:'#ffffff', border:'#ef4444', sw:1, ph:'invalid@',            phColor:'#18181b', bgTok:'background', brdTok:'',                phTok:'foreground',        cBg:'input/background', cBrd:'', cPh:'input/text' },
+    { label:'Disabled', bg:'#f4f4f5', border:'#e4e4e7', sw:1, ph:'Disabled input',     phColor:'#a1a1aa', bgTok:'muted', brdTok:'input', phTok:'disabled-foreground', opacity:0.6, cBg:'input/disabled-background', cBrd:'input/border', cPh:'input/disabled-text' },
   ];
   var allComps = [];
   defs.forEach(function(s) {
@@ -1346,8 +1523,8 @@ function buildInputPage(page) {
     comp.primaryAxisAlignItems = 'MIN';
     comp.counterAxisAlignItems = 'CENTER';
     setPaddingH(comp, 12);
-    comp.fills = [vp(s.bgTok, s.bg)];
-    comp.strokes = s.label === 'Error' ? [solidPaint('#ef4444')] : [vp(s.brdTok, s.border)];
+    comp.fills = [cvp(s.cBg, s.bgTok, s.bg)];
+    comp.strokes = s.label === 'Error' ? [solidPaint('#ef4444')] : [cvp(s.cBrd, s.brdTok, s.border)];
     comp.strokeWeight = s.sw;
     comp.strokeAlign = 'INSIDE';
     if (s.opacity) comp.opacity = s.opacity;
@@ -1355,7 +1532,7 @@ function buildInputPage(page) {
     ph.characters = s.ph;
     ph.fontSize = S.fontSize;
     ph.fontName = fontName('Regular');
-    ph.fills = [vp(s.phTok, s.phColor)];
+    ph.fills = [cvp(s.cPh, s.phTok, s.phColor)];
     comp.appendChild(ph);
     ph.layoutSizingHorizontal = 'FILL';
     ph.layoutSizingVertical = 'HUG';
@@ -1371,10 +1548,10 @@ function buildInputPage(page) {
 
 function buildTextareaPage(page) {
   var defs = [
-    { label:'Default',  bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'Write your message here...' },
-    { label:'Focus',    bg:'#ffffff', border:'#18181b', sw:2, ph:'Write your message here...' },
-    { label:'Filled',   bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'Hello, World!'              },
-    { label:'Disabled', bg:'#f4f4f5', border:'#e4e4e7', sw:1, ph:'Disabled textarea', opacity:0.6 },
+    { label:'Default',  bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'Write your message here...', bgTok:'background', brdTok:'input', phTok:'muted-foreground', cBg:'textarea/background', cBrd:'textarea/border', cPh:'textarea/placeholder' },
+    { label:'Focus',    bg:'#ffffff', border:'#18181b', sw:2, ph:'Write your message here...', bgTok:'background', brdTok:'input', phTok:'muted-foreground', cBg:'textarea/background', cBrd:'textarea/border', cPh:'textarea/placeholder' },
+    { label:'Filled',   bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'Hello, World!',              bgTok:'background', brdTok:'input', phTok:'foreground', cBg:'textarea/background', cBrd:'textarea/border', cPh:'textarea/text' },
+    { label:'Disabled', bg:'#f4f4f5', border:'#e4e4e7', sw:1, ph:'Disabled textarea', opacity:0.6, bgTok:'muted', brdTok:'input', phTok:'muted-foreground', cBg:'textarea/disabled-background', cBrd:'textarea/border', cPh:'textarea/placeholder' },
   ];
   var allComps = [];
   defs.forEach(function(s) {
@@ -1389,8 +1566,8 @@ function buildTextareaPage(page) {
     comp.primaryAxisAlignItems = 'MIN';
     comp.counterAxisAlignItems = 'MIN';
     setPadding(comp, 12);
-    comp.fills = [vp('textarea/background', s.bg)];
-    comp.strokes = [solidPaint(s.border)];
+    comp.fills = [cvp(s.cBg, s.bgTok, s.bg)];
+    comp.strokes = [cvp(s.cBrd, s.brdTok, s.border)];
     comp.strokeWeight = s.sw;
     comp.strokeAlign = 'INSIDE';
     if (s.opacity) comp.opacity = s.opacity;
@@ -1398,7 +1575,7 @@ function buildTextareaPage(page) {
     ph.characters = s.ph;
     ph.fontSize = S.fontSize;
     ph.fontName = fontName('Regular');
-    ph.fills = [vp(s.label === 'Filled' ? 'textarea/text' : 'textarea/placeholder', s.label === 'Filled' ? '#18181b' : '#a1a1aa')];
+    ph.fills = [cvp(s.cPh, s.phTok, s.label === 'Filled' ? '#18181b' : '#a1a1aa')];
     comp.appendChild(ph);
     ph.layoutSizingHorizontal = 'FILL';
     ph.layoutSizingVertical = 'HUG';
@@ -1414,9 +1591,9 @@ function buildTextareaPage(page) {
 
 function buildSelectPage(page) {
   var defs = [
-    { label:'Closed',   text:'Select an option', textColor:'#a1a1aa', textTok:'select/placeholder', border:'#e4e4e7', sw:1 },
-    { label:'Open',     text:'Option 2',          textColor:'#18181b', textTok:'select/text',        border:'#18181b', sw:2 },
-    { label:'Disabled', text:'Select an option',  textColor:'#a1a1aa', textTok:'select/placeholder', border:'#e4e4e7', sw:1, opacity:0.6 },
+    { label:'Closed',   text:'Select an option', textColor:'#a1a1aa', textTok:'muted-foreground', border:'#e4e4e7', sw:1, cTxt:'select/placeholder' },
+    { label:'Open',     text:'Option 2',          textColor:'#18181b', textTok:'foreground',        border:'#18181b', sw:2, cTxt:'select/text' },
+    { label:'Disabled', text:'Select an option',  textColor:'#a1a1aa', textTok:'muted-foreground', border:'#e4e4e7', sw:1, opacity:0.6, cTxt:'select/placeholder' },
   ];
   var allComps = [];
   defs.forEach(function(s) {
@@ -1433,8 +1610,8 @@ function buildSelectPage(page) {
     comp.paddingLeft = 12; bindFloat(comp, 'paddingLeft', 'spacing/3');
     comp.paddingRight = 8; bindFloat(comp, 'paddingRight', 'spacing/2');
     setGap(comp, 4);
-    comp.fills = [vp('select/background', '#ffffff')];
-    comp.strokes = [vp('select/border', s.border)];
+    comp.fills = [cvp('select/background', 'background', '#ffffff')];
+    comp.strokes = [cvp('select/border', 'input', s.border)];
     comp.strokeWeight = s.sw;
     comp.strokeAlign = 'INSIDE';
     if (s.opacity) comp.opacity = s.opacity;
@@ -1442,7 +1619,7 @@ function buildSelectPage(page) {
     t.characters = s.text;
     t.fontSize = S.fontSize;
     t.fontName = fontName('Regular');
-    t.fills = [vp(s.textTok, s.textColor)];
+    t.fills = [cvp(s.cTxt, s.textTok, s.textColor)];
     comp.appendChild(t);
     t.layoutSizingHorizontal = 'FILL';
     t.layoutSizingVertical = 'HUG';
@@ -1477,14 +1654,14 @@ function buildSwitchPage(page) {
     comp.primaryAxisAlignItems = s.checked ? 'MAX' : 'MIN';
     comp.counterAxisAlignItems = 'CENTER';
     setPadding(comp, 3);
-    comp.fills = [vp(s.checked ? 'switch/track-checked' : 'switch/track-unchecked', s.checked ? '#18181b' : '#e4e4e7')];
+    comp.fills = [cvp(s.checked ? 'switch/track-checked' : 'switch/track-unchecked', s.checked ? 'primary' : 'muted', s.checked ? '#18181b' : '#e4e4e7')];
     if (s.disabled) comp.opacity = 0.4;
     var tSz = S.switchH - 6;
     var thumb = figma.createFrame();
     thumb.name = 'thumb';
     thumb.resize(tSz, tSz);
     setRadius(thumb, tSz / 2);
-    thumb.fills = [vp('switch/thumb', '#ffffff')];
+    thumb.fills = [cvp('switch/thumb', 'background', '#ffffff')];
     comp.appendChild(thumb);
     thumb.layoutSizingHorizontal = 'FIXED';
     thumb.layoutSizingVertical = 'FIXED';
@@ -1519,8 +1696,8 @@ function buildCheckboxPage(page) {
     comp.primaryAxisAlignItems = 'CENTER';
     comp.counterAxisAlignItems = 'CENTER';
     comp.fills = s.checked === true
-      ? [vp('checkbox/background-checked', '#18181b')]
-      : [vp('checkbox/background-default', '#ffffff')];
+      ? [cvp('checkbox/background-checked', 'primary', '#18181b')]
+      : [cvp('checkbox/background-default', 'background', '#ffffff')];
     comp.strokes = [solidPaint(s.checked ? '#18181b' : '#e4e4e7')];
     comp.strokeWeight = 1.5;
     comp.strokeAlign = 'INSIDE';
@@ -1566,8 +1743,8 @@ function buildRadioPage(page) {
     comp.counterAxisSizingMode = 'FIXED';
     comp.primaryAxisAlignItems = 'CENTER';
     comp.counterAxisAlignItems = 'CENTER';
-    comp.fills = [vp('radio/background', '#ffffff')];
-    comp.strokes = [vp(s.checked ? 'radio/border' : '', s.checked ? '#18181b' : '#e4e4e7')];
+    comp.fills = [cvp('radio/background', 'background', '#ffffff')];
+    comp.strokes = [cvp(s.checked ? 'radio/border' : '', s.checked ? 'primary' : '', s.checked ? '#18181b' : '#e4e4e7')];
     comp.strokeWeight = 1.5;
     comp.strokeAlign = 'INSIDE';
     if (s.disabled) comp.opacity = 0.4;
@@ -1576,7 +1753,7 @@ function buildRadioPage(page) {
       dot.name = 'dot';
       dot.resize(8, 8);
     setRadius(dot, 4);
-      dot.fills = [vp('radio/indicator', '#18181b')];
+      dot.fills = [cvp('radio/indicator', 'primary', '#18181b')];
       comp.appendChild(dot);
       dot.layoutSizingHorizontal = 'FIXED';
       dot.layoutSizingVertical = 'FIXED';
@@ -1609,22 +1786,22 @@ function buildSliderPage(page) {
     track.name = 'track';
     track.resize(240, 6);
     setRadius(track, 3);
-    track.fills = [vp('slider/track-background', '#e4e4e7')];
+    track.fills = [cvp('slider/track-background', 'muted', '#e4e4e7')];
     track.x = 0; track.y = 7;
     comp.appendChild(track);
     var range = figma.createFrame();
     range.name = 'range';
     range.resize(Math.round(240 * s.value / 100), 6);
     setRadius(range, 3);
-    range.fills = [vp('slider/range', '#18181b')];
+    range.fills = [cvp('slider/range', 'primary', '#18181b')];
     range.x = 0; range.y = 7;
     comp.appendChild(range);
     var thumb = figma.createFrame();
     thumb.name = 'thumb';
     thumb.resize(20, 20);
     setRadius(thumb, 10);
-    thumb.fills = [vp('slider/thumb', '#ffffff')];
-    thumb.strokes = [vp('slider/thumb-border', '#18181b')];
+    thumb.fills = [cvp('slider/thumb', 'background', '#ffffff')];
+    thumb.strokes = [cvp('slider/thumb-border', 'primary', '#18181b')];
     thumb.strokeWeight = 2;
     thumb.strokeAlign = 'INSIDE';
     thumb.x = Math.round(240 * s.value / 100) - 10;
@@ -1640,10 +1817,10 @@ function buildSliderPage(page) {
 
 function buildBadgePage(page) {
   var variants = [
-    { label:'Default',     bg:'#18181b', fg:'#fafafa', border:null,      bgTok:'badge/default/background',     fgTok:'badge/default/foreground'     },
-    { label:'Secondary',   bg:'#f4f4f5', fg:'#18181b', border:null,      bgTok:'badge/secondary/background',   fgTok:'badge/secondary/foreground'   },
-    { label:'Destructive', bg:'#ef4444', fg:'#fafafa', border:null,      bgTok:'badge/destructive/background', fgTok:'badge/destructive/foreground' },
-    { label:'Outline',     bg:'#ffffff', fg:'#18181b', border:'#e4e4e7', bgTok:null,                           fgTok:'badge/outline/foreground',    brdTok:'badge/outline/border' },
+    { label:'Default',     bg:'#18181b', fg:'#fafafa', border:null,      bgTok:'primary',     fgTok:'primary-foreground',     cBg:'badge/default/background', cFg:'badge/default/foreground' },
+    { label:'Secondary',   bg:'#f4f4f5', fg:'#18181b', border:null,      bgTok:'secondary',   fgTok:'secondary-foreground',   cBg:'badge/secondary/background', cFg:'badge/secondary/foreground' },
+    { label:'Destructive', bg:'#ef4444', fg:'#fafafa', border:null,      bgTok:'destructive', fgTok:'destructive-foreground', cBg:'badge/destructive/background', cFg:'badge/destructive/foreground' },
+    { label:'Outline',     bg:'#ffffff', fg:'#18181b', border:'#e4e4e7', bgTok:null,                           fgTok:'foreground',    brdTok:'border', cBg:null, cFg:'badge/outline/foreground', cBrd:'badge/outline/border' },
   ];
   var allComps = [];
   variants.forEach(function(v) {
@@ -1659,9 +1836,9 @@ function buildBadgePage(page) {
     comp.primaryAxisAlignItems = 'CENTER';
     comp.counterAxisAlignItems = 'CENTER';
     setPaddingH(comp, 8);
-    comp.fills = v.bgTok ? [vp(v.bgTok, v.bg)] : [solidPaint(v.bg)];
+    comp.fills = v.bgTok ? [cvp(v.cBg, v.bgTok, v.bg)] : [solidPaint(v.bg)];
     if (v.border) {
-      comp.strokes = [vp(v.brdTok || '', v.border)];
+      comp.strokes = [cvp(v.cBrd || '', v.brdTok || '', v.border)];
       comp.strokeWeight = 1;
       comp.strokeAlign = 'INSIDE';
     }
@@ -1669,7 +1846,7 @@ function buildBadgePage(page) {
     t.characters = v.label;
     t.fontSize = Math.max(S.fontSize - 2, 10);
     t.fontName = fontName('Medium');
-    t.fills = [vp(v.fgTok, v.fg)];
+    t.fills = [cvp(v.cFg, v.fgTok, v.fg)];
     comp.appendChild(t);
     t.layoutSizingHorizontal = 'HUG';
     t.layoutSizingVertical = 'HUG';
@@ -1683,8 +1860,8 @@ function buildBadgePage(page) {
 
 function buildCardPage(page) {
   var variants = [
-    { label:'Variant=Light', bg:'#ffffff', title:'#18181b', desc:'#71717a', border:'#e4e4e7', btnBg:'#18181b', btnFg:{r:1,g:1,b:1},     bgTok:'card/background', fgTok:'card/foreground', brdTok:'card/border' },
-    { label:'Variant=Dark',  bg:'#18181b', title:'#ffffff', desc:'#71717a', border:'#27272a', btnBg:'#f4f4f5', btnFg:{r:0.1,g:0.1,b:0.1}, bgTok:'card/background', fgTok:'card/foreground', brdTok:'card/border' },
+    { label:'Variant=Light', bg:'#ffffff', title:'#18181b', desc:'#71717a', border:'#e4e4e7', btnBg:'#18181b', btnFg:{r:1,g:1,b:1},     bgTok:'card', fgTok:'card-foreground', brdTok:'border', cBg:'card/background', cFg:'card/foreground', cBrd:'card/border' },
+    { label:'Variant=Dark',  bg:'#18181b', title:'#ffffff', desc:'#71717a', border:'#27272a', btnBg:'#f4f4f5', btnFg:{r:0.1,g:0.1,b:0.1}, bgTok:'card', fgTok:'card-foreground', brdTok:'border', cBg:'card/background', cFg:'card/foreground', cBrd:'card/border' },
   ];
   var allComps = [];
   variants.forEach(function(v) {
@@ -1700,8 +1877,8 @@ function buildCardPage(page) {
     comp.counterAxisAlignItems = 'MIN';
     setPadding(comp, 0);
     setGap(comp, 0);
-    comp.fills = [vp(v.bgTok, v.bg)];
-    comp.strokes = [vp(v.brdTok, v.border)];
+    comp.fills = [cvp(v.cBg, v.bgTok, v.bg)];
+    comp.strokes = [cvp(v.cBrd, v.brdTok, v.border)];
     comp.strokeWeight = 1;
     comp.strokeAlign = 'INSIDE';
     comp.effects = [{ type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.06}, offset:{x:0,y:2}, radius:8, spread:0, visible:true, blendMode:'NORMAL' }];
@@ -1720,7 +1897,7 @@ function buildCardPage(page) {
     ct.characters = 'Card Title';
     setFontSize(ct, 16);
     ct.fontName = fontName('Semi Bold');
-    ct.fills = [vp(v.fgTok, v.title)];
+    ct.fills = [cvp(v.cFg, v.fgTok, v.title)];
     header.appendChild(ct);
     ct.layoutSizingHorizontal = 'HUG';
     ct.layoutSizingVertical = 'HUG';
@@ -1785,8 +1962,8 @@ function buildCardPage(page) {
 
 function buildAlertPage(page) {
   var variants = [
-    { label:'Variant=Default',     bg:'#ffffff', border:'#e4e4e7', titleColor:'#18181b', descColor:'#71717a', title:'Heads up!', desc:'You can add components using the CLI.', bgTok:'alert/default/background',     brdTok:'alert/default/border',     ttlTok:'alert/default/foreground',     dscTok:'alert/default/foreground',     icon:'info'    },
-    { label:'Variant=Destructive', bg:'#ffffff', border:'#ef4444', titleColor:'#ef4444', descColor:'#b91c1c', title:'Error',     desc:'Your session has expired. Please log in.', bgTok:'alert/destructive/background', brdTok:'alert/destructive/border', ttlTok:'alert/destructive/foreground', dscTok:'alert/destructive/foreground', icon:'error'   },
+    { label:'Variant=Default',     bg:'#ffffff', border:'#e4e4e7', titleColor:'#18181b', descColor:'#71717a', title:'Heads up!', desc:'You can add components using the CLI.', bgTok:'background',     brdTok:'border',     ttlTok:'foreground',     dscTok:'foreground',     icon:'info',  cBg:'alert/default/background', cBrd:'alert/default/border', cTtl:'alert/default/foreground', cDsc:'alert/default/foreground' },
+    { label:'Variant=Destructive', bg:'#ffffff', border:'#ef4444', titleColor:'#ef4444', descColor:'#b91c1c', title:'Error',     desc:'Your session has expired. Please log in.', bgTok:'background', brdTok:'destructive', ttlTok:'destructive', dscTok:'destructive', icon:'error', cBg:'alert/destructive/background', cBrd:'alert/destructive/border', cTtl:'alert/destructive/foreground', cDsc:'alert/destructive/foreground' },
   ];
   var allComps = [];
   variants.forEach(function(v) {
@@ -1802,8 +1979,8 @@ function buildAlertPage(page) {
     comp.counterAxisAlignItems = 'CENTER';
     setPaddingH(comp, 16); setPaddingV(comp, 12);
     setGap(comp, 12);
-    comp.fills = [vp(v.bgTok, v.bg)];
-    comp.strokes = [vp(v.brdTok, v.border)];
+    comp.fills = [cvp(v.cBg, v.bgTok, v.bg)];
+    comp.strokes = [cvp(v.cBrd, v.brdTok, v.border)];
     comp.strokeWeight = 1;
     comp.strokeAlign = 'INSIDE';
 
@@ -1828,7 +2005,7 @@ function buildAlertPage(page) {
     aTitle.characters = v.title;
     aTitle.fontSize = S.fontSize + 1;
     aTitle.fontName = fontName('Semi Bold');
-    aTitle.fills = [vp(v.ttlTok, v.titleColor)];
+    aTitle.fills = [cvp(v.cTtl, v.ttlTok, v.titleColor)];
     textGroup.appendChild(aTitle);
     aTitle.layoutSizingHorizontal = 'HUG';
     aTitle.layoutSizingVertical = 'HUG';
@@ -1836,7 +2013,7 @@ function buildAlertPage(page) {
     aDesc.characters = v.desc;
     setFontSize(aDesc, 13);
     aDesc.fontName = fontName('Regular');
-    aDesc.fills = [vp(v.dscTok, v.descColor)];
+    aDesc.fills = [cvp(v.cDsc, v.dscTok, v.descColor)];
     textGroup.appendChild(aDesc);
     aDesc.layoutSizingHorizontal = 'HUG';
     aDesc.layoutSizingVertical = 'HUG';
@@ -1853,8 +2030,8 @@ function buildAlertPage(page) {
 
 function buildToastPage(page) {
   var variants = [
-    { label:'Variant=Default',     bg:'#ffffff', border:'#e4e4e7', title:'Scheduled: Catch up',         desc:'Friday, Feb 10, 2023 at 5:57 PM',     bgTok:'toast/background',             brdTok:'toast/border', iconSemantic:'success', iconColor:'#18181b' },
-    { label:'Variant=Destructive', bg:'#ffffff', border:'#ef4444', title:'Error: Something went wrong',  desc:'Please try again or contact support.', bgTok:'toast/destructive/background', brdTok:'toast/border', iconSemantic:'error',   iconColor:'#ef4444' },
+    { label:'Variant=Default',     bg:'#ffffff', border:'#e4e4e7', title:'Scheduled: Catch up',         desc:'Friday, Feb 10, 2023 at 5:57 PM',     bgTok:'background',             brdTok:'border', iconSemantic:'success', iconColor:'#18181b', cBg:'toast/background', cBrd:'toast/border' },
+    { label:'Variant=Destructive', bg:'#ffffff', border:'#ef4444', title:'Error: Something went wrong',  desc:'Please try again or contact support.', bgTok:'background', brdTok:'border', iconSemantic:'error',   iconColor:'#ef4444', cBg:'toast/destructive/background', cBrd:'toast/border' },
   ];
   var allComps = [];
   variants.forEach(function(v) {
@@ -1870,8 +2047,8 @@ function buildToastPage(page) {
     comp.counterAxisAlignItems = 'CENTER';
     setPaddingH(comp, 12); setPaddingV(comp, 0);
     setGap(comp, 8);
-    comp.fills = [vp(v.bgTok, v.bg)];
-    comp.strokes = [vp(v.brdTok, v.border)];
+    comp.fills = [cvp(v.cBg, v.bgTok, v.bg)];
+    comp.strokes = [cvp(v.cBrd, v.brdTok, v.border)];
     comp.strokeWeight = 1;
     comp.strokeAlign = 'INSIDE';
     comp.effects = [{ type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.12}, offset:{x:0,y:4}, radius:16, spread:0, visible:true, blendMode:'NORMAL' }];
@@ -1897,7 +2074,7 @@ function buildToastPage(page) {
     ttitle.characters = v.title;
     setFontSize(ttitle, 13);
     ttitle.fontName = fontName('Semi Bold');
-    ttitle.fills = [vp('toast/foreground', '#18181b')];
+    ttitle.fills = [cvp('toast/foreground', 'foreground', '#18181b')];
     textGroup.appendChild(ttitle);
     ttitle.layoutSizingHorizontal = 'HUG';
     ttitle.layoutSizingVertical = 'HUG';
@@ -1922,7 +2099,7 @@ function buildToastPage(page) {
     btn.counterAxisSizingMode = 'FIXED';
     btn.primaryAxisAlignItems = 'CENTER';
     btn.counterAxisAlignItems = 'CENTER';
-    btn.fills = [vp('toast/action-background', '#f4f4f5')];
+    btn.fills = [cvp('toast/action-background', 'secondary', '#f4f4f5')];
     comp.appendChild(btn);
     btn.layoutSizingHorizontal = 'FIXED';
     btn.layoutSizingVertical = 'FIXED';
@@ -1930,7 +2107,7 @@ function buildToastPage(page) {
     tu.characters = 'Undo';
     setFontSize(tu, 12);
     tu.fontName = fontName('Medium');
-    tu.fills = [vp('toast/action-foreground', '#18181b')];
+    tu.fills = [cvp('toast/action-foreground', 'secondary-foreground', '#18181b')];
     btn.appendChild(tu);
     tu.layoutSizingHorizontal = 'HUG';
     tu.layoutSizingVertical = 'HUG';
@@ -1955,8 +2132,8 @@ function buildDialogPage(page) {
   comp.counterAxisAlignItems = 'MIN';
   setPadding(comp, 24);
   setGap(comp, 16);
-  comp.fills = [vp('dialog/background', '#ffffff')];
-  comp.strokes = [vp('dialog/border', '#e4e4e7')];
+  comp.fills = [cvp('dialog/background', 'background', '#ffffff')];
+  comp.strokes = [cvp('dialog/border', 'border', '#e4e4e7')];
   comp.strokeWeight = 1;
   comp.strokeAlign = 'INSIDE';
   comp.effects = [{ type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.2}, offset:{x:0,y:8}, radius:40, spread:0, visible:true, blendMode:'NORMAL' }];
@@ -1965,7 +2142,7 @@ function buildDialogPage(page) {
   dtitle.characters = 'Edit Profile';
   setFontSize(dtitle, 18);
   dtitle.fontName = fontName('Semi Bold');
-  dtitle.fills = [vp('dialog/foreground', '#18181b')];
+  dtitle.fills = [cvp('dialog/foreground', 'foreground', '#18181b')];
   comp.appendChild(dtitle);
   dtitle.layoutSizingHorizontal = 'HUG';
   dtitle.layoutSizingVertical = 'HUG';
@@ -2051,7 +2228,7 @@ function buildDialogPage(page) {
   save.counterAxisSizingMode = 'FIXED';
   save.primaryAxisAlignItems = 'CENTER';
   save.counterAxisAlignItems = 'CENTER';
-  save.fills = [vp('button/default/background', '#18181b')];
+  save.fills = [vp('primary', '#18181b')];
   actions.appendChild(save);
 
   var st2 = figma.createText();
@@ -2093,7 +2270,7 @@ function buildCoverPage(page) {
 
   // Color palette swatches
   var paletteY = 260;
-  var swatchNames = ['slate','gray','zinc','red','orange','amber','yellow','lime','green','emerald','teal','cyan','sky','blue','indigo','violet','purple','fuchsia','pink','rose'];
+  var swatchNames = ACTIVE_COLORS && ACTIVE_COLORS.length > 0 ? ACTIVE_COLORS : Object.keys(TW_COLORS);
   var shades = [50,100,200,300,400,500,600,700,800,900,950];
   var swW = 32; var swH = 32; var swGap = 2;
 
@@ -2151,6 +2328,27 @@ function buildCanvasComponents(selectedComponents, options, fontFamily) {
     clearPage(iconPg);
     figma.currentPage = iconPg;
     buildIconPage(iconPg, libLabel, iconsData); // also populates ICON_CACHE
+  }
+
+  // Clear stale caches from previous runs
+  BUTTON_COMP_CACHE = {};
+  LABEL_COMP_CACHE = {};
+  INPUT_COMP_CACHE = {};
+  TEXTAREA_COMP_CACHE = {};
+  SELECT_COMP_CACHE = {};
+  SWITCH_COMP_CACHE = {};
+  CHECKBOX_COMP_CACHE = {};
+  RADIO_COMP_CACHE = {};
+
+  // buttongroup depends on button being built first
+  if (selectedComponents.indexOf('buttongroup') !== -1) {
+    if (selectedComponents.indexOf('button') === -1) {
+      selectedComponents = ['button'].concat(selectedComponents);
+    }
+    // Ensure button comes before buttongroup
+    selectedComponents = selectedComponents.filter(function(k) { return k !== 'buttongroup'; });
+    var bgIdx = selectedComponents.indexOf('button');
+    selectedComponents.splice(bgIdx + 1, 0, 'buttongroup');
   }
 
   // formfield depends on caches populated by label/input/textarea/select/switch/checkbox/radio
@@ -2255,21 +2453,51 @@ figma.ui.onmessage = async function(msg) {
   if (msg.type === 'generate') {
     var opts = msg.options;
     try {
-      sendProgress('Creating Tailwind 4 primitives… (244 variables)', 5);
-      var primResult  = createPrimitivesCollection();
+      ACTIVE_COLORS = opts.selectedColors || Object.keys(TW_COLORS);
+      var colorCount = ACTIVE_COLORS.length * 11 + 2;
+      var opacityCount = opts.opacityVariants && opts.opacityVariants.length > 0
+        ? ACTIVE_COLORS.length * 11 * opts.opacityVariants.length : 0;
+      sendProgress('Creating color primitives… (' + (colorCount + opacityCount) + ' variables)', 5);
+      var primResult = createPrimitivesCollection(opts.selectedColors, opts.opacityVariants);
 
-      sendProgress('Creating Tailwind sizing tokens (font-size, radius, border-width, opacity)…', 20);
-      createSizingCollection();
+      // Update SEMANTIC_TOKENS global so component collection can use it
+      var roles = opts.semanticRoles || DEFAULT_ROLES;
+      var tokenStructure = opts.tokenStructure || 'classic';
+      SEMANTIC_TOKENS = tokenStructure === 'improved'
+        ? getImprovedSemanticTokens(roles)
+        : getSemanticTokens(roles);
+
+      sendProgress('Creating sizing tokens…', 20);
+      createSizingCollection({
+        includeRadius:      opts.includeRadius,
+        includeSpacing:     opts.includeSpacing,
+        includeFontSizes:   opts.includeFontSizes,
+        includeBorderWidth: opts.includeBorderWidth,
+        includeOpacityVars: opts.includeOpacityVars,
+      });
 
       var themeResult = { variableMap: {} };
+      removeExistingCollection('Themes');
+      removeExistingCollection('Ale/Themes');
+      removeExistingCollection('shadcn / Components'); // clean up from previous runs
       if (opts.includeSemanticTokens !== false) {
-        sendProgress('Creating shadcn/ui semantic themes (Light + Dark)…', 35);
-        themeResult = createThemeCollection(primResult.variableMap, opts.theme);
+        sendProgress('Creating semantic themes (Light + Dark)…', 35);
+        themeResult = createThemeCollection(primResult.variableMap, roles, tokenStructure);
       }
 
-      if (opts.components && opts.components.length > 0) {
+      if (opts.components && opts.components.length > 0 && tokenStructure === 'classic' && opts.includeSemanticTokens !== false) {
         sendProgress('Creating component token variables…', 60);
         createComponentCollection(opts.components, themeResult.variableMap, primResult.variableMap);
+      }
+
+      // Shadows & text styles
+      if (opts.includeShadows) {
+        sendProgress('Creating shadow styles…', 62);
+        createShadowStyles();
+      }
+      if (opts.includeTextStyles) {
+        sendProgress('Creating text styles…', 65);
+        await createTextStyles(opts.fontFamily);
       }
 
       // Accept icon data from UI (fetched from CDN)
