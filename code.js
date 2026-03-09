@@ -2604,6 +2604,8 @@ figma.ui.onmessage = async function(msg) {
   }
   if (msg.type === 'clear-file') {
     try {
+      // Load all pages first (required for dynamic-page document access)
+      await figma.loadAllPagesAsync();
       // Create a fresh blank page and make it active so we can safely remove all existing pages
       var freshPage = figma.createPage();
       freshPage.name = 'Page 1';
