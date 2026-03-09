@@ -25,6 +25,12 @@ There are no test or lint commands. Use `node -c code.js` to syntax-check the ba
 | `code.js` (~2800 lines) | Plugin backend: token generation, component builders, styles, Figma variable system |
 | `ui.html` (~1400 lines) | Plugin UI: color palette, semantic roles, style picker, foundation toggles, canvas options |
 | `manifest.json` | Figma plugin metadata — ID `1612677598601934351`, network access for CDN icon fetching |
+| `icon-scafforge.png` | Plugin icon (128×128 PNG), embedded as base64 in `ui.html` header and about panel |
+| `LICENSE` | Source-available license with third-party notices (Tailwind, shadcn/ui, Lucide, Iconoir) |
+
+## Important: No dynamic-page Document Access
+
+Do **not** add `"documentAccess": "dynamic-page"` to `manifest.json`. This restricts the plugin to only the current page and silently breaks operations that need full document access (e.g. clear file, which removes all pages and variable collections). The plugin needs unrestricted document access to function correctly.
 
 ## Architecture
 
@@ -96,3 +102,6 @@ Key state variables: `selectedColors` (Set), `roleSelections`, `tokenStructure` 
 - **11 font families**: Inter, Geist, Roboto, DM Sans, Plus Jakarta Sans, Manrope, Nunito, Outfit, Poppins, Work Sans, IBM Plex Sans
 - **Foundation toggles**: Radius, Spacing, Font Sizes, Border Width, Opacity — each independently togglable
 - **Figma styles**: Shadow effect styles (sm–2xl + inner), Text styles (xs–9xl)
+- **Clear file**: Removes all pages, variable collections, paint/effect/text styles and creates a fresh Page 1
+- **Plugin UI panels**: Header with icon, Settings menu with About and Licenses panels
+- **License**: Source-available; redistribution, commercial use, and derivative works prohibited. Third-party attributions for Tailwind CSS (MIT), shadcn/ui (MIT), Lucide (ISC), Iconoir (MIT)
