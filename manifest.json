@@ -6,6 +6,5 @@
   "ui": "ui.html",
   "editorType": ["figma"],
   "capabilities": [],
-  "networkAccess": { "allowedDomains": ["https://unpkg.com", "https://data.jsdelivr.com", "https://cdn.jsdelivr.net"] },
-  "documentAccess": "dynamic-page"
+  "networkAccess": { "allowedDomains": ["https://unpkg.com", "https://data.jsdelivr.com", "https://cdn.jsdelivr.net"] }
 }
