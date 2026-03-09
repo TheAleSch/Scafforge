@@ -138,16 +138,6 @@
     }
     .btn-primary:hover:not(:disabled) { opacity: 0.9; }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    @keyframes petroleum-shift {
-      0%   { background-position: 0% 50%; }
-      100% { background-position: 200% 50%; }
-    }
-    .btn-primary.generating {
-      background: linear-gradient(90deg, #0d4f4f, #1a7a6d, #2dd4a8, #1a7a6d, #0d4f4f);
-      background-size: 200% 100%;
-      animation: petroleum-shift 2s linear infinite;
-      color: #ffffff; opacity: 1;
-    }
     .btn-ghost {
       background: transparent; color: var(--muted-foreground);
       padding: 2px 4px;
@@ -1412,7 +1402,6 @@
       var btn = document.getElementById('generateBtn');
       btn.disabled = true;
       btn.textContent = 'Generating…';
-      btn.classList.add('generating');
       document.getElementById('progressArea').style.display = 'flex';
       document.getElementById('progressFill').style.background = 'var(--primary)';
       document.getElementById('progressText').textContent = 'Starting…';
@@ -1524,7 +1513,6 @@
         document.getElementById('progressText').textContent = 'Done! Variables created in Figma.';
         var btn = document.getElementById('generateBtn');
         btn.disabled = false;
-        btn.classList.remove('generating');
         btn.textContent = canvasToggle.checked ? 'Regenerate Variables + Components' : 'Regenerate Variables';
       }
       if (msg.type === 'cleared') {
@@ -1538,7 +1526,6 @@
         document.getElementById('progressText').textContent = 'Error: ' + msg.message;
         var btn = document.getElementById('generateBtn');
         btn.disabled = false;
-        btn.classList.remove('generating');
         btn.textContent = 'Retry';
       }
     };
