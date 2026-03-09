@@ -74,6 +74,26 @@
       font-size: 11px; font-weight: 600;
       text-transform: uppercase; letter-spacing: 0.07em;
       color: var(--muted-foreground);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .info-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 14px; height: 14px; border-radius: 50%;
+      color: var(--muted-foreground); opacity: 0.5;
+      cursor: help; position: relative; flex-shrink: 0;
+    }
+    .info-icon:hover { opacity: 1; }
+    .info-icon:hover .info-tooltip { display: block; }
+    .info-tooltip {
+      display: none; position: absolute; left: 50%; top: calc(100% + 6px);
+      transform: translateX(-50%); z-index: 100;
+      background: var(--foreground); color: var(--background);
+      font-size: 11px; font-weight: 400; line-height: 1.5;
+      text-transform: none; letter-spacing: 0;
+      padding: 8px 10px; border-radius: 6px;
+      width: max-content; max-width: 220px;
+      white-space: normal; pointer-events: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     .card-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
     .card-footer {
@@ -631,7 +651,7 @@
     <!-- Color Palette -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Color Palette</span>
+        <span class="card-title">Color Palette<span class="info-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="info-tooltip">Pick which Tailwind 4 color scales to include. Each selected color generates 11 shades as Figma variables.</span></span></span>
         <button class="btn btn-link" id="selectAllColorsBtn">Select all</button>
       </div>
       <div class="card-body" style="padding:10px 14px">
@@ -668,7 +688,7 @@
     <!-- Semantic Tokens -->
     <div class="card" id="rolesCard">
       <div class="card-header">
-        <span class="card-title">Semantic Tokens</span>
+        <span class="card-title">Semantic Tokens<span class="info-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="info-tooltip">Assign colors to semantic roles (primary, destructive, etc.) and choose between Classic (shadcn/ui) or Ale Style (fg/bg/border) token structure.</span></span></span>
       </div>
       <div class="card-body" style="padding:8px 14px 0">
         <div class="seg-ctrl" id="tokenStructureSeg">
@@ -689,7 +709,7 @@
     <!-- Style -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Style</span>
+        <span class="card-title">Style<span class="info-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="info-tooltip">Choose a visual style that sets radius, spacing, and sizing for all generated components.</span></span></span>
         <span class="badge badge-outline" id="styleLabel">Vega</span>
       </div>
       <div id="stylePicker">
@@ -764,7 +784,7 @@
     <!-- Foundation -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Foundation</span>
+        <span class="card-title">Foundation<span class="info-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="info-tooltip">Toggle which variable collections to generate: color primitives, semantic themes, radius, spacing, font sizes, border width, and opacity.</span></span></span>
         <span class="badge badge-outline" id="primitivesBadge">0</span>
       </div>
       <div class="foundation-item">
@@ -852,7 +872,7 @@
     <!-- Styles -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Styles</span>
+        <span class="card-title">Styles<span class="info-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="info-tooltip">Generate Figma effect styles (shadows) and text styles matching Tailwind's scale.</span></span></span>
       </div>
       <div class="foundation-item">
         <div class="foundation-icon" style="background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.25) 100%)"></div>
@@ -882,7 +902,7 @@
     <!-- Components -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Components</span>
+        <span class="card-title">Components<span class="info-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="info-tooltip">Select which components to generate as Figma variants with variable bindings. Each component adapts to your chosen tokens and style.</span></span></span>
         <button class="btn btn-link" id="selectAllBtn">Select all</button>
       </div>
       <div class="card-body" style="padding:10px 14px">
@@ -893,7 +913,7 @@
     <!-- Canvas -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Canvas</span>
+        <span class="card-title">Canvas<span class="info-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="info-tooltip">Configure how components are placed: font family, page layout, cover page, and icon library.</span></span></span>
       </div>
       <input type="checkbox" id="canvasToggle" checked style="display:none" />
 
