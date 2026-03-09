@@ -28,9 +28,15 @@ There are no test or lint commands. Use `node -c code.js` to syntax-check the ba
 | `icon-scafforge.png` | Plugin icon (128×128 PNG), embedded as base64 in `ui.html` header and about panel |
 | `LICENSE` | Source-available license with third-party notices (Tailwind, shadcn/ui, Lucide, Iconoir) |
 
-## Important: No dynamic-page Document Access
+## Important: dynamic-page Document Access
 
-Do **not** add `"documentAccess": "dynamic-page"` to `manifest.json`. This restricts the plugin to only the current page and silently breaks operations that need full document access (e.g. clear file, which removes all pages and variable collections). The plugin needs unrestricted document access to function correctly.
+The manifest uses `"documentAccess": "dynamic-page"` for performance (avoids loading all pages upfront). This requires:
+
+- **`figma.currentPage = x`** → must use **`await figma.setCurrentPageAsync(x)`**
+- **`figma.getLocalPaintStyles()`** → must use **`await figma.getLocalPaintStylesAsync()`** (same for effect/text styles)
+- **`await` inside `.forEach()`** does not work — use **`for` loops** instead
+- Before accessing all pages (e.g. clear file), call **`await figma.loadAllPagesAsync()`**
+- Any function using these async APIs must itself be `async` and `await`ed at the call site
 
 ## Architecture
 
