@@ -2356,7 +2356,8 @@ function getOrCreatePage(name) {
   return p;
 }
 
-function clearPage(page) {
+async function clearPage(page) {
+  await page.loadAsync();
   while (page.children.length > 0) {
     page.children[0].remove();
   }
@@ -2375,7 +2376,7 @@ async function buildCanvasComponents(selectedComponents, options, fontFamily) {
     var libLabel     = ACTIVE_ICON_LIB === 'lucide' ? 'Lucide' : 'Iconoir';
     var iconPageName = 'Icons \u2014 ' + libLabel;
     var iconPg       = getOrCreatePage(iconPageName);
-    clearPage(iconPg);
+    await clearPage(iconPg);
     await figma.setCurrentPageAsync(iconPg);
     buildIconPage(iconPg, libLabel, iconsData); // also populates ICON_CACHE
   }
@@ -2443,14 +2444,14 @@ async function buildCanvasComponents(selectedComponents, options, fontFamily) {
 
   if (coverPage) {
     var cp = getOrCreatePage('Cover');
-    clearPage(cp);
+    await clearPage(cp);
     buildCoverPage(cp);
     pagesBuilt['Cover'] = true;
   }
 
   if (pageMode === 'single') {
     var singlePage = getOrCreatePage('Components');
-    clearPage(singlePage);
+    await clearPage(singlePage);
     await figma.setCurrentPageAsync(singlePage);
     var singleSets = [];
     selectedComponents.forEach(function(key) {
@@ -2471,7 +2472,7 @@ async function buildCanvasComponents(selectedComponents, options, fontFamily) {
       });
       if (!groupKeys.length) continue;
       var gPage = getOrCreatePage(groupName);
-      clearPage(gPage);
+      await clearPage(gPage);
       await figma.setCurrentPageAsync(gPage);
       var groupSets = [];
       groupKeys.forEach(function(key) {
@@ -2491,7 +2492,7 @@ async function buildCanvasComponents(selectedComponents, options, fontFamily) {
     var pageName = def.name;
     if (pagesBuilt[pageName]) continue;
     var pg = getOrCreatePage(pageName);
-    clearPage(pg);
+    await clearPage(pg);
     await figma.setCurrentPageAsync(pg);
     var set = builders[key](pg);
     if (set) placeComponentSets(pg, [set]);
