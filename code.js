@@ -1,4 +1,4 @@
-figma.showUI(__html__, { width: 460, height: 800, title: 'TW4 + shadcn/ui Variables' });
+figma.showUI(__html__, { width: 460, height: 800, title: 'Scafforge' });
 
 // ─── Tailwind 4 Color Palette ────────────────────────────────────────────────
 var TW_COLORS = {
@@ -126,6 +126,11 @@ function getImprovedSemanticTokens(roles) {
     'bg/info-1':          { light:i+'-100',   dark: i+'-900' },
     'bg/positive-1':      { light:s+'-100',   dark: s+'-900' },
 
+    // ── hover/ ──
+    'bg/highlight-hover': { light:p+'-700',   dark: p+'-300' },
+    'bg/neutral-3-hover': { light:n+'-200',   dark: n+'-700' },
+    'bg/destructive-1-hover': { light:d+'-600', dark: d+'-800' },
+
     // ── border/ ──
     'border/highlight':   { light:p+'-300',   dark: p+'-700' },
     'border/highlight-2': { light:p+'-200',   dark: p+'-800' },
@@ -140,6 +145,33 @@ function getImprovedSemanticTokens(roles) {
 }
 
 var SEMANTIC_TOKENS = getSemanticTokens(DEFAULT_ROLES);
+
+// Maps classic theme token names → Ale Style token names
+// Used by vp() to auto-resolve when in Ale mode
+var ALE_TOKEN_MAP = {
+  'background':             'bg/neutral',
+  'foreground':             'fg/neutral-1',
+  'card':                   'bg/neutral',
+  'card-foreground':        'fg/neutral-1',
+  'primary':                'bg/highlight',
+  'primary-foreground':     'fg/over-theme',
+  'primary-hover':          'bg/highlight-hover',
+  'secondary':              'bg/neutral-3',
+  'secondary-foreground':   'fg/neutral-1',
+  'secondary-hover':        'bg/neutral-3-hover',
+  'muted':                  'bg/neutral-3',
+  'muted-foreground':       'fg/neutral-3',
+  'accent':                 'bg/neutral-3',
+  'accent-foreground':      'fg/neutral-1',
+  'destructive':            'bg/destructive-1',
+  'destructive-foreground': 'fg/over-primary',
+  'destructive-hover':      'bg/destructive-1-hover',
+  'disabled-foreground':    'fg/neutral-4',
+  'border':                 'border/neutral',
+  'input':                  'border/neutral',
+  'ring':                   'border/highlight',
+};
+var USE_ALE_MAP = false; // Set to true during generation in Ale mode
 
 // ─── Component Token Definitions ─────────────────────────────────────────────
 var COMPONENT_DEFINITIONS = {
@@ -211,6 +243,7 @@ var COMPONENT_DEFINITIONS = {
     tokens: {
       'select/background':       {light:'alias:background',        dark:'alias:background'},
       'select/border':           {light:'alias:input',             dark:'alias:input'},
+      'select/ring':             {light:'alias:ring',              dark:'alias:ring'},
       'select/text':             {light:'alias:foreground',        dark:'alias:foreground'},
       'select/placeholder':      {light:'alias:muted-foreground',  dark:'alias:muted-foreground'},
       'select/item-hover':       {light:'alias:accent',            dark:'alias:accent'},
@@ -763,13 +796,23 @@ function buildVarCache() {
 // Returns a SOLID paint, bound to a variable if found, else fallback hex
 // tokenName can be a theme token ('primary') or component token ('button/default/background').
 // Tries exact match first. If a compToken (3rd arg) is given, tries that first.
+// In Ale mode, classic token names are mapped to Ale Style equivalents automatically.
 function vp(tokenName, fallbackHex, compToken) {
   var c = fallbackHex ? rgb(fallbackHex) : { r:0.5, g:0.5, b:0.5 };
   var base = { type:'SOLID', color:c };
   if (VAR_CACHE) {
+    // In classic mode, try component token first
     if (compToken && VAR_CACHE[compToken]) {
       return figma.variables.setBoundVariableForPaint(base, 'color', VAR_CACHE[compToken]);
     }
+    // In Ale mode, map classic name → Ale name
+    if (USE_ALE_MAP && tokenName && ALE_TOKEN_MAP[tokenName]) {
+      var aleName = ALE_TOKEN_MAP[tokenName];
+      if (VAR_CACHE[aleName]) {
+        return figma.variables.setBoundVariableForPaint(base, 'color', VAR_CACHE[aleName]);
+      }
+    }
+    // Direct match (works for both classic theme tokens and already-Ale-named tokens)
     if (tokenName && VAR_CACHE[tokenName]) {
       return figma.variables.setBoundVariableForPaint(base, 'color', VAR_CACHE[tokenName]);
     }
@@ -902,12 +945,12 @@ function getIcon(semanticName) {
 }
 
 // Recolour stroke-based SVG icons — only touches VECTOR nodes, never container frames
-function tintIcon(node, hexColor) {
-  var paint = solidPaint(hexColor);
+// tintIcon accepts either a hex string or a pre-built paint object (from vp/cvp)
+function tintIcon(node, colorOrPaint) {
+  var paint = (typeof colorOrPaint === 'string') ? solidPaint(colorOrPaint) : colorOrPaint;
   function walk(n) {
     if (n.type === 'VECTOR') {
       if (n.strokes && n.strokes.length > 0) n.strokes = [paint];
-      // Only tint fills when the icon path itself uses fill (e.g. filled icons)
       if (n.fills && n.fills.length > 0 && n.fills[0].type === 'SOLID' && n.fills[0].color &&
           (n.fills[0].color.r > 0 || n.fills[0].color.g > 0 || n.fills[0].color.b > 0)) {
         n.fills = [paint];
@@ -960,7 +1003,7 @@ function addChevron(parent, slotX, slotY, slotW, slotH, color) {
 }
 
 // Draw a checkmark vector path scaled to boxSize — always drawn, no icon instance.
-function addCheckmark(parent, boxSize, color) {
+function addCheckmark(parent, boxSize, color, paintObj) {
   var sw = Math.max(1.5, boxSize / 9);
   var p  = sw;                        // inset from edge
   var mx = boxSize * 0.2 + p / 2;    // start x
@@ -975,7 +1018,7 @@ function addCheckmark(parent, boxSize, color) {
   v.strokeWeight  = sw;
   v.strokeCap     = 'ROUND';
   v.strokeJoin    = 'ROUND';
-  v.strokes       = [solidPaint(color || '#ffffff')];
+  v.strokes       = [paintObj || solidPaint(color || '#ffffff')];
   v.fills         = [];
   v.resize(boxSize, boxSize);
   parent.appendChild(v);
@@ -1102,10 +1145,17 @@ function buildButtonPage(page) {
         }
         if (state === 'Disabled') comp.opacity = 0.4;
 
+        // Resolve foreground token (shared by icon and text)
+        var fgHex = v.fg || '#18181b';
+        var fgTok, cFgTok;
+        if (state === 'Hover' && v.hFgTok) { fgTok = v.hFgTok; fgHex = v.hFg || fgHex; cFgTok = v.cHFg; }
+        else { fgTok = v.fgTok; cFgTok = v.cFg; }
+        var fgPaint = vp(fgTok || '', fgHex, cFgTok);
+
         if (sz.key.indexOf('icon') === 0) {
           var iconInst = getIcon('plus');
           if (iconInst) {
-            tintIcon(iconInst, v.fg || '#fafafa');
+            tintIcon(iconInst, fgPaint);
             comp.appendChild(iconInst);
             iconInst.layoutSizingHorizontal = 'FIXED';
             iconInst.layoutSizingVertical = 'FIXED';
@@ -1115,7 +1165,7 @@ function buildButtonPage(page) {
             icon.resize(sz.fz, sz.fz);
             icon.cornerRadius = 2;
             icon.fills = [];
-            icon.strokes = [solidPaint(v.fg || '#fafafa')];
+            icon.strokes = [fgPaint];
             icon.strokeWeight = 1.5;
             comp.appendChild(icon);
           }
@@ -1124,11 +1174,7 @@ function buildButtonPage(page) {
           t.characters = v.label;
           t.fontSize = sz.fz;
           t.fontName = fontName('Medium');
-          var fgHex = v.fg || '#18181b';
-          var fgTok, cFgTok;
-          if (state === 'Hover' && v.hFgTok) { fgTok = v.hFgTok; fgHex = v.hFg || fgHex; cFgTok = v.cHFg; }
-          else { fgTok = v.fgTok; cFgTok = v.cFg; }
-          t.fills = [vp(fgTok || '', fgHex, cFgTok)];
+          t.fills = [fgPaint];
           comp.appendChild(t);
           t.layoutSizingHorizontal = 'HUG';
           t.layoutSizingVertical = 'HUG';
@@ -1591,9 +1637,9 @@ function buildTextareaPage(page) {
 
 function buildSelectPage(page) {
   var defs = [
-    { label:'Closed',   text:'Select an option', textColor:'#a1a1aa', textTok:'muted-foreground', border:'#e4e4e7', sw:1, cTxt:'select/placeholder' },
-    { label:'Open',     text:'Option 2',          textColor:'#18181b', textTok:'foreground',        border:'#18181b', sw:2, cTxt:'select/text' },
-    { label:'Disabled', text:'Select an option',  textColor:'#a1a1aa', textTok:'muted-foreground', border:'#e4e4e7', sw:1, opacity:0.6, cTxt:'select/placeholder' },
+    { label:'Closed',   text:'Select an option', textColor:'#a1a1aa', textTok:'muted-foreground', border:'#e4e4e7', brdTok:'input',  sw:1, cTxt:'select/placeholder', cBrd:'select/border' },
+    { label:'Open',     text:'Option 2',          textColor:'#18181b', textTok:'foreground',        border:'#18181b', brdTok:'ring',   sw:2, cTxt:'select/text',        cBrd:'select/ring' },
+    { label:'Disabled', text:'Select an option',  textColor:'#a1a1aa', textTok:'muted-foreground', border:'#e4e4e7', brdTok:'input',  sw:1, opacity:0.6, cTxt:'select/placeholder', cBrd:'select/border' },
   ];
   var allComps = [];
   defs.forEach(function(s) {
@@ -1611,7 +1657,7 @@ function buildSelectPage(page) {
     comp.paddingRight = 8; bindFloat(comp, 'paddingRight', 'spacing/2');
     setGap(comp, 4);
     comp.fills = [cvp('select/background', 'background', '#ffffff')];
-    comp.strokes = [cvp('select/border', 'input', s.border)];
+    comp.strokes = [cvp(s.cBrd, s.brdTok, s.border)];
     comp.strokeWeight = s.sw;
     comp.strokeAlign = 'INSIDE';
     if (s.opacity) comp.opacity = s.opacity;
@@ -1698,18 +1744,20 @@ function buildCheckboxPage(page) {
     comp.fills = s.checked === true
       ? [cvp('checkbox/background-checked', 'primary', '#18181b')]
       : [cvp('checkbox/background-default', 'background', '#ffffff')];
-    comp.strokes = [solidPaint(s.checked ? '#18181b' : '#e4e4e7')];
+    comp.strokes = s.checked
+      ? [cvp('checkbox/border', 'primary', '#18181b')]
+      : [cvp('checkbox/border', 'border', '#e4e4e7')];
     comp.strokeWeight = 1.5;
     comp.strokeAlign = 'INSIDE';
     if (s.disabled) comp.opacity = 0.4;
     if (s.checked === true) {
-      addCheckmark(comp, 16, '#ffffff');
+      addCheckmark(comp, 16, null, cvp('checkbox/foreground-checked', 'primary-foreground', '#ffffff'));
     } else if (s.checked === 'ind') {
       var dash = figma.createFrame();
       dash.name = 'dash';
       dash.resize(10, 2);
       setRadius(dash, 1);
-      dash.fills = [solidPaint('#18181b')];
+      dash.fills = [cvp('checkbox/foreground-checked', 'primary-foreground', '#18181b')];
       comp.appendChild(dash);
       dash.layoutSizingHorizontal = 'FIXED';
       dash.layoutSizingVertical = 'FIXED';
@@ -1744,7 +1792,9 @@ function buildRadioPage(page) {
     comp.primaryAxisAlignItems = 'CENTER';
     comp.counterAxisAlignItems = 'CENTER';
     comp.fills = [cvp('radio/background', 'background', '#ffffff')];
-    comp.strokes = [cvp(s.checked ? 'radio/border' : '', s.checked ? 'primary' : '', s.checked ? '#18181b' : '#e4e4e7')];
+    comp.strokes = s.checked
+      ? [cvp('radio/border', 'primary', '#18181b')]
+      : [cvp('radio/border', 'border', '#e4e4e7')];
     comp.strokeWeight = 1.5;
     comp.strokeAlign = 'INSIDE';
     if (s.disabled) comp.opacity = 0.4;
@@ -2463,6 +2513,7 @@ figma.ui.onmessage = async function(msg) {
       // Update SEMANTIC_TOKENS global so component collection can use it
       var roles = opts.semanticRoles || DEFAULT_ROLES;
       var tokenStructure = opts.tokenStructure || 'classic';
+      USE_ALE_MAP = tokenStructure === 'improved';
       SEMANTIC_TOKENS = tokenStructure === 'improved'
         ? getImprovedSemanticTokens(roles)
         : getSemanticTokens(roles);
