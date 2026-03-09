@@ -979,7 +979,7 @@ function getIcon(semanticName) {
 function tintIcon(node, colorOrPaint) {
   var paint = (typeof colorOrPaint === 'string') ? solidPaint(colorOrPaint) : colorOrPaint;
   function walk(n) {
-    if (n.type === 'VECTOR') {
+    if (n.type === 'VECTOR' || n.type === 'RECTANGLE' || n.type === 'ELLIPSE' || n.type === 'STAR' || n.type === 'POLYGON' || n.type === 'LINE') {
       if (n.strokes && n.strokes.length > 0) n.strokes = [paint];
       if (n.fills && n.fills.length > 0 && n.fills[0].type === 'SOLID' && n.fills[0].color &&
           (n.fills[0].color.r > 0 || n.fills[0].color.g > 0 || n.fills[0].color.b > 0)) {
