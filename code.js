@@ -1553,7 +1553,7 @@ function buildInputPage(page) {
     { label:'Default',  bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'Placeholder text',   phColor:'#a1a1aa', bgTok:'background', brdTok:'input',    phTok:'muted-foreground', cBg:'input/background', cBrd:'input/border', cPh:'input/placeholder' },
     { label:'Focus',    bg:'#ffffff', border:'#18181b', sw:2, ph:'Focused input',       phColor:'#a1a1aa', bgTok:'background', brdTok:'ring',      phTok:'muted-foreground', cBg:'input/background', cBrd:'input/ring', cPh:'input/placeholder' },
     { label:'Filled',   bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'user@example.com',   phColor:'#18181b', bgTok:'background', brdTok:'input',    phTok:'foreground',        cBg:'input/background', cBrd:'input/border', cPh:'input/text' },
-    { label:'Error',    bg:'#ffffff', border:'#ef4444', sw:1, ph:'invalid@',            phColor:'#18181b', bgTok:'background', brdTok:'',                phTok:'foreground',        cBg:'input/background', cBrd:'', cPh:'input/text' },
+    { label:'Error',    bg:'#ffffff', border:'#ef4444', sw:1, ph:'invalid@',            phColor:'#18181b', bgTok:'background', brdTok:'destructive',     phTok:'foreground',        cBg:'input/background', cBrd:'input/error-border', cPh:'input/text' },
     { label:'Disabled', bg:'#f4f4f5', border:'#e4e4e7', sw:1, ph:'Disabled input',     phColor:'#a1a1aa', bgTok:'muted', brdTok:'input', phTok:'disabled-foreground', opacity:0.6, cBg:'input/disabled-background', cBrd:'input/border', cPh:'input/disabled-text' },
   ];
   var allComps = [];
@@ -1570,7 +1570,7 @@ function buildInputPage(page) {
     comp.counterAxisAlignItems = 'CENTER';
     setPaddingH(comp, 12);
     comp.fills = [cvp(s.cBg, s.bgTok, s.bg)];
-    comp.strokes = s.label === 'Error' ? [solidPaint('#ef4444')] : [cvp(s.cBrd, s.brdTok, s.border)];
+    comp.strokes = [cvp(s.cBrd, s.brdTok, s.border)];
     comp.strokeWeight = s.sw;
     comp.strokeAlign = 'INSIDE';
     if (s.opacity) comp.opacity = s.opacity;
