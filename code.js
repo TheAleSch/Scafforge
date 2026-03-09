@@ -257,154 +257,10 @@ var COMPONENT_GROUPS = {
 };
 
 // ─── Icon libraries ───────────────────────────────────────────────────────────
-// SVG inner HTML only (no <svg> wrapper). Lucide v0.462 • stroke-based 24×24.
-var LUCIDE_ICONS = {
-  // Navigation & layout
-  'home':            '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
-  'menu':            '<line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/>',
-  'grid':            '<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
-  'list':            '<line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/>',
-  'sidebar':         '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="9" x2="9" y1="3" y2="21"/>',
-  'layout-dashboard':'<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
-  // Arrows & chevrons
-  'chevron-up':      '<path d="m18 15-6-6-6 6"/>',
-  'chevron-down':    '<path d="m6 9 6 6 6-6"/>',
-  'chevron-left':    '<path d="m15 18-6-6 6-6"/>',
-  'chevron-right':   '<path d="m9 18 6-6-6-6"/>',
-  'arrow-up':        '<path d="m5 12 7-7 7 7"/><path d="M12 19V5"/>',
-  'arrow-down':      '<path d="m19 12-7 7-7-7"/><path d="M12 5v14"/>',
-  'arrow-left':      '<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
-  'arrow-right':     '<path d="m5 12 7 7 7-7"/><path d="M5 12h14"/>',
-  'move':            '<polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/>',
-  // Actions
-  'search':          '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>',
-  'plus':            '<path d="M5 12h14"/><path d="M12 5v14"/>',
-  'minus':           '<path d="M5 12h14"/>',
-  'x':               '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
-  'check':           '<path d="M20 6 9 17l-5-5"/>',
-  'edit':            '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
-  'trash-2':         '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
-  'copy':            '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
-  'download':        '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
-  'upload':          '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
-  'share-2':         '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>',
-  'refresh-cw':      '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
-  'filter':          '<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
-  'settings':        '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
-  // Status & feedback
-  'alert-circle':    '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>',
-  'alert-triangle':  '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
-  'check-circle':    '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>',
-  'info':            '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
-  'x-circle':        '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
-  'loader':          '<path d="M12 2v4"/><path d="m16.24 7.76 2.83-2.83"/><path d="M18 12h4"/><path d="m16.24 16.24 2.83 2.83"/><path d="M12 18v4"/><path d="m4.93 19.07 2.83-2.83"/><path d="M2 12h4"/><path d="m4.93 4.93 2.83 2.83"/>',
-  // Communication
-  'bell':            '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
-  'mail':            '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
-  'phone':           '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.99 12 19.79 19.79 0 0 1 1.91 3.4 2 2 0 0 1 3.89 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>',
-  'message-circle':  '<path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/>',
-  'send':            '<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
-  // User
-  'user':            '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
-  'users':           '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-  'log-in':          '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/>',
-  'log-out':         '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
-  // Security
-  'eye':             '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
-  'eye-off':         '<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/>',
-  'lock':            '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
-  'unlock':          '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>',
-  'shield':          '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
-  // Content
-  'star':            '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
-  'heart':           '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7z"/>',
-  'bookmark':        '<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>',
-  'tag':             '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>',
-  'more-horizontal': '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
-  'more-vertical':   '<circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>',
-  // Files & media
-  'file':            '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><polyline points="14 2 14 8 20 8"/>',
-  'folder':          '<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2z"/>',
-  'image':           '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
-  'video':           '<polygon points="23 7 16 12 23 17 23 7"/><rect width="15" height="14" x="1" y="5" rx="2" ry="2"/>',
-  'music':           '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
-  'paperclip':       '<path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>',
-  // Date & time
-  'calendar':        '<rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>',
-  'clock':           '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
-  // Links & web
-  'link':            '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
-  'external-link':   '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/>',
-  'globe':           '<circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
-  'map-pin':         '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
-  // Theme
-  'sun':             '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
-  'moon':            '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>',
-  'zap':             '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
-};
-
-// Iconnoir v2 • stroke-based 24×24 • stroke-width 1.5
-var ICONNOIR_ICONS = {
-  // Navigation
-  'home-simple':       '<path stroke-width="1.5" d="M3 10.182V20a1 1 0 0 0 1 1h5v-5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v5h5a1 1 0 0 0 1-1V10.182a1 1 0 0 0-.382-.782l-9-7a1 1 0 0 0-1.236 0l-9 7A1 1 0 0 0 3 10.182z"/>',
-  'nav-arrow-right':   '<path stroke-width="1.5" d="M9 6l6 6-6 6"/>',
-  'nav-arrow-left':    '<path stroke-width="1.5" d="M15 6l-6 6 6 6"/>',
-  'nav-arrow-up':      '<path stroke-width="1.5" d="M6 15l6-6 6 6"/>',
-  'nav-arrow-down':    '<path stroke-width="1.5" d="M6 9l6 6 6-6"/>',
-  'page':              '<path stroke-width="1.5" d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path stroke-width="1.5" d="M15 2v5h5"/>',
-  'multi-page':        '<path stroke-width="1.5" d="M4 6h13l3 3v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"/><path stroke-width="1.5" d="M7 6V4a1 1 0 0 1 1-1h11l3 3v11a1 1 0 0 1-1 1h-2"/>',
-  'grid-add':          '<path stroke-width="1.5" d="M3 5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5zm0 11a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3zm11 0a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2v-3zm3-8v-2m0 0V4m0 2h-2m2 0h2"/>',
-  // Actions
-  'search':            '<path stroke-width="1.5" d="M17 17l4 4M3 11a8 8 0 1 0 16 0A8 8 0 0 0 3 11z"/>',
-  'plus':              '<path stroke-width="1.5" d="M6 12h6m6 0h-6m0 0V6m0 6v6"/>',
-  'minus':             '<path stroke-width="1.5" d="M6 12h12"/>',
-  'cancel':            '<path stroke-width="1.5" d="M6.758 17.243L12.001 12m5.243-5.243L12 12m0 0L6.758 6.757M12.001 12l5.243 5.243"/>',
-  'check':             '<path stroke-width="1.5" d="M5 13l4 4L19 7"/>',
-  'edit-pencil':       '<path stroke-width="1.5" d="M14.363 5.652l1.48-1.48a2 2 0 0 1 2.829 0l1.414 1.414a2 2 0 0 1 0 2.828l-1.48 1.48M14.363 5.652l-9.675 9.675a2 2 0 0 0-.578 1.283l-.23 2.44a1 1 0 0 0 1.086 1.087l2.44-.23a2 2 0 0 0 1.282-.578l9.675-9.677M14.363 5.652l4.243 4.243"/>',
-  'trash':             '<path stroke-width="1.5" d="M20 9l-1.995 11.346A2 2 0 0 1 16.035 22h-8.07a2 2 0 0 1-1.97-1.654L4 9M21 6h-5.625M3 6h5.625m0 0V4a1 1 0 0 1 1-1h4.75a1 1 0 0 1 1 1v2m-6.75 0h6.75"/>',
-  'download':          '<path stroke-width="1.5" d="M12 13V3M12 13l-3-3m3 3 3-3M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/>',
-  'upload':            '<path stroke-width="1.5" d="M12 11V21M12 11l-3 3m3-3 3 3M4 7v-.5A1.5 1.5 0 0 1 5.5 5h13A1.5 1.5 0 0 1 20 6.5V7"/>',
-  'share-ios':         '<path stroke-width="1.5" d="M12 13V3m0 0L8 7m4-4 4 4"/><path stroke-width="1.5" d="M8 13H5a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1h-3"/>',
-  'refresh':           '<path stroke-width="1.5" d="M21.888 13.5C21.164 18.307 17.013 22 12 22 6.477 22 2 17.523 2 12S6.477 2 12 2c4.1 0 7.625 2.468 9.168 6M22 7V2l-3 3-3-3"/>',
-  'filter-list':       '<path stroke-width="1.5" d="M3 5h18M7 12h10m-7 7h4"/>',
-  'settings':          '<path stroke-width="1.5" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path stroke-width="1.5" d="M19.622 10.395l-1.097-2.65L20 6l-2-2-1.735 1.483-2.707-1.113L12.935 2h-1.954l-.632 2.401-2.645 1.115L6 4 4 6l1.453 1.784-1.08 2.657L2 11v2l2.401.655L5.516 16.3 4 18l2 2 1.784-1.453 2.657 1.08L11 22h2l.604-2.401 2.651-1.098C16.697 19.48 18 20 18 20l2-2-1.484-1.75 1.098-2.652L22 13v-2l-2.378-.605z"/>',
-  // Status
-  'warning-triangle':  '<path stroke-width="1.5" d="M20.043 21H3.957c-1.538 0-2.5-1.664-1.734-2.997l8.043-13.988c.77-1.337 2.699-1.337 3.468 0l8.043 13.988C22.543 19.336 21.58 21 20.043 21z"/><path stroke-width="1.5" d="M12 9v4"/><path stroke-width="1.5" d="M12 17.01l.01-.011"/>',
-  'info-circle':       '<path stroke-width="1.5" d="M12 11.5v5M12 7.51l.01-.011M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>',
-  'check-circle':      '<path stroke-width="1.5" d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/><path stroke-width="1.5" d="M7 12l3.5 3.5 5.5-7"/>',
-  'xmark-circle':      '<path stroke-width="1.5" d="M9.172 14.828L12.001 12m2.828-2.828L12.001 12m0 0L9.172 9.172M12.001 12l2.828 2.828M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>',
-  'clock':             '<path stroke-width="1.5" d="M12 6v6.349L15.5 15M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z"/>',
-  'hourglass':         '<path stroke-width="1.5" d="M6.5 22h11m-11-20h11M7 2v4l5 4-5 4v4m10-16v4l-5 4 5 4v4"/>',
-  // Communication
-  'bell':              '<path stroke-width="1.5" d="M18 8.5a6 6 0 1 0-12 0c0 4.314-2 5.5-2 8h16c0-2.5-2-3.714-2-8z"/><path stroke-width="1.5" d="M9.5 21a2.5 2.5 0 0 0 5 0"/>',
-  'mail':              '<path stroke-width="1.5" d="M2 7l10 7L22 7M2 7v10a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7M2 7a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1"/>',
-  'chat-bubble':       '<path stroke-width="1.5" d="M8 13.5h4m-4-4h8M3.387 16.2L2.063 20.5 7 19.15M3.6 12c0-4.97 3.79-9 8.4-9 4.613 0 8.4 4.03 8.4 9s-3.787 9-8.4 9c-1.312 0-2.55-.318-3.64-.88L3.6 21v-9z"/>',
-  'send-mail':         '<path stroke-width="1.5" d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>',
-  // User
-  'user':              '<path stroke-width="1.5" d="M12 2C9.239 2 7 4.239 7 7s2.239 5 5 5 5-2.239 5-5-2.239-5-5-5zm-9 18c0-4.418 4.03-8 9-8s9 3.582 9 8"/>',
-  'group':             '<path stroke-width="1.5" d="M1 20c0-3.314 2.686-6 6-6m11 6c0-3.314-2.686-6-6-6M13 8A4 4 0 1 1 5 8a4 4 0 0 1 8 0zm5 2a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>',
-  'log-in':            '<path stroke-width="1.5" d="M9 12h12m0 0l-3.5-3.5M21 12l-3.5 3.5"/><path stroke-width="1.5" d="M11 7.825V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-1.825"/>',
-  'log-out':           '<path stroke-width="1.5" d="M12 12h12m0 0l-3.5-3.5M24 12l-3.5 3.5M3 12h4"/><path stroke-width="1.5" d="M15 7.825V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1.825"/>',
-  // Security
-  'eye-solid':         '<path stroke-width="1.5" d="M3 12s3.6-7 9-7 9 7 9 7-3.6 7-9 7-9-7-9-7z"/><path stroke-width="1.5" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>',
-  'eye-off':           '<path stroke-width="1.5" d="M3 3l18 18M10.5 10.677a3 3 0 0 0 3.823 3.823M6.362 6.619C4.392 8.048 3 10 3 12s3.6 7 9 7c1.85 0 3.515-.603 4.896-1.545M19.032 16.824C20.93 15.394 22 13.349 22 12c0-2-3.6-7-9-7-1.23 0-2.38.274-3.418.724"/>',
-  'lock':              '<path stroke-width="1.5" d="M16 12H8m8 0V8a4 4 0 0 0-8 0v4m8 0h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1H8"/>',
-  'shield-check':      '<path stroke-width="1.5" d="M9 12l2 2 4-4"/><path stroke-width="1.5" d="M12 3L4 6v6c0 4.418 3.582 8 8 8s8-3.582 8-8V6l-8-3z"/>',
-  // Content & media
-  'media-image':       '<path stroke-width="1.5" d="M21 3.6v16.8a.6.6 0 0 1-.6.6H3.6a.6.6 0 0 1-.6-.6V3.6a.6.6 0 0 1 .6-.6h16.8a.6.6 0 0 1 .6.6z"/><path stroke-width="1.5" d="M3 16l7-7 4 4 2-2 5 5"/><path stroke-width="1.5" d="M16 10a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/>',
-  'bookmark':          '<path stroke-width="1.5" d="M6 4v17l6-4 6 4V4a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/>',
-  'heart':             '<path stroke-width="1.5" d="M22 8.862A5.69 5.69 0 0 1 20.761 13c-1.348 1.87-5.453 5.36-7.963 7.37a1.144 1.144 0 0 1-1.596 0C8.692 18.36 4.587 14.87 3.24 13A5.69 5.69 0 0 1 2 8.862 5.888 5.888 0 0 1 7.893 3c1.988 0 3.716 1.002 4.107 2.155C12.391 4.002 14.12 3 16.107 3A5.888 5.888 0 0 1 22 8.862z"/>',
-  'star':              '<path stroke-width="1.5" d="M12 1.5l3.092 6.27 6.908.997-5 4.876 1.18 6.887L12 17.277l-6.18 3.253 1.18-6.887-5-4.876 6.908-.997L12 1.5z"/>',
-  'tag':               '<path stroke-width="1.5" d="M2 4.6A2.6 2.6 0 0 1 4.6 2h6.04a2.6 2.6 0 0 1 1.838.762l8.8 8.8a2.6 2.6 0 0 1 0 3.676l-5.802 5.8a2.6 2.6 0 0 1-3.676 0l-8.8-8.8A2.6 2.6 0 0 1 2 10.638V4.6z"/><path stroke-width="1.5" d="M7 8.01l.01-.011"/>',
-  // Misc
-  'sun-light':         '<path stroke-width="1.5" d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM12 2v1m0 18v1M4.22 4.22l.7.7m12.16 12.16.7.7M2 12h1m18 0h1M4.22 19.78l.7-.7M18.36 5.64l.7-.7"/>',
-  'half-moon':         '<path stroke-width="1.5" d="M12 3a6.36 6.36 0 0 0 0 18A10 10 0 1 1 12 3z"/>',
-  'flash':             '<path stroke-width="1.5" d="M13 2L4.5 13.5H11L10.5 22 19 10.5H13L13 2z"/>',
-  'link':              '<path stroke-width="1.5" d="M10.5 13.5A5 5 0 0 0 17 20a5 5 0 1 0-3.536-8.535L12 13m1.5-2.5A5 5 0 0 0 7 4a5 5 0 1 0 3.536 8.535L12 11"/>',
-  'globe':             '<path stroke-width="1.5" d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/><path stroke-width="1.5" d="M12 2c-2.796 2.293-4.5 5.906-4.5 10S9.204 19.707 12 22c2.796-2.293 4.5-5.906 4.5-10S14.796 4.293 12 2z"/><path stroke-width="1.5" d="M2 12h20"/>',
-  'map-pin':           '<path stroke-width="1.5" d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/><path stroke-width="1.5" d="M12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>',
-  'calendar':          '<path stroke-width="1.5" d="M15 4V2m0 2v2m0-2H9M2 9h20M9 4V2m0 2v2M3 13h1m3 0h1m3 0h1m3 0h1m-9 4h1m3 0h1m3 0h1M3 6.4V20a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V6.4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z"/>',
-};
+// Icon data is fetched from CDN at runtime (see ui.html).
+// The backend receives it via the generate message as options.iconData.
+// RUNTIME_ICONS is set from that payload before building icon pages.
+var RUNTIME_ICONS = {};
 
 // ─── Icon page builder ────────────────────────────────────────────────────────
 function buildIconPage(page, libraryName, icons) {
@@ -415,7 +271,8 @@ function buildIconPage(page, libraryName, icons) {
   var keys    = Object.keys(icons);
   var rows    = Math.ceil(keys.length / COLS);
 
-  var svgWrap = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#18181b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+  var sw = libraryName === 'Iconoir' ? '1.5' : '2';
+  var svgWrap = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#18181b" stroke-width="' + sw + '" stroke-linecap="round" stroke-linejoin="round">';
 
   var allComps = [];
 
@@ -466,13 +323,6 @@ function buildIconPage(page, libraryName, icons) {
   return frame;
 }
 
-function buildLucideIconsPage(page) {
-  return buildIconPage(page, 'Lucide', LUCIDE_ICONS);
-}
-
-function buildIconnoirIconsPage(page) {
-  return buildIconPage(page, 'Iconnoir', ICONNOIR_ICONS);
-}
 
 // ─── Color helpers ────────────────────────────────────────────────────────────
 function hexToRgba(hex, alpha) {
@@ -699,7 +549,7 @@ function makeFrame(name, w, h, opts) {
   f.layoutMode = 'NONE';
   if (opts && opts.fill) setFill(f, opts.fill);
   else f.fills = [];
-  if (opts && opts.radius) f.cornerRadius = opts.radius;
+  if (opts && opts.radius) setRadius(f, opts.radius);
   return f;
 }
 
@@ -707,13 +557,13 @@ function makeAutoFrame(name, direction, gap, padding, opts) {
   var f = figma.createFrame();
   f.name            = name;
   f.layoutMode      = direction; // 'HORIZONTAL' or 'VERTICAL'
-  f.itemSpacing     = gap;
-  f.paddingTop = f.paddingBottom = f.paddingLeft = f.paddingRight = padding;
+  setGap(f, gap);
+  setPadding(f, padding);
   f.primaryAxisSizingMode   = 'AUTO';
   f.counterAxisSizingMode   = 'AUTO';
   if (opts && opts.fill)   setFill(f, opts.fill);
   else f.fills = [];
-  if (opts && opts.radius) f.cornerRadius = opts.radius;
+  if (opts && opts.radius) setRadius(f, opts.radius);
   if (opts && opts.stroke) { setStroke(f, opts.stroke, 1); }
   return f;
 }
@@ -732,11 +582,16 @@ function sectionLabel(parent, text, x, y) {
 
 // ── Variable cache & paint binder ─────────────────────────────────────────────
 var VAR_CACHE = null;
+var FLOAT_CACHE = null;
 
 function buildVarCache() {
   VAR_CACHE = {};
   figma.variables.getLocalVariables('COLOR').forEach(function(v) {
     VAR_CACHE[v.name] = v;
+  });
+  FLOAT_CACHE = {};
+  figma.variables.getLocalVariables('FLOAT').forEach(function(v) {
+    FLOAT_CACHE[v.name] = v;
   });
 }
 
@@ -748,6 +603,84 @@ function vp(tokenName, fallbackHex) {
     return figma.variables.setBoundVariableForPaint(base, 'color', VAR_CACHE[tokenName]);
   }
   return base;
+}
+
+// Bind a FLOAT variable to a node property (cornerRadius, fontSize, padding, etc.)
+// field: the VariableBindableNodeField — e.g. 'topLeftRadius', 'fontSize', 'paddingLeft', 'itemSpacing'
+function bindFloat(node, field, varName) {
+  if (FLOAT_CACHE && varName && FLOAT_CACHE[varName]) {
+    node.setBoundVariable(field, FLOAT_CACHE[varName]);
+  }
+}
+
+// Bind cornerRadius to a radius/* variable on all four corners
+function bindRadius(node, varName) {
+  if (FLOAT_CACHE && varName && FLOAT_CACHE[varName]) {
+    node.setBoundVariable('topLeftRadius', FLOAT_CACHE[varName]);
+    node.setBoundVariable('topRightRadius', FLOAT_CACHE[varName]);
+    node.setBoundVariable('bottomLeftRadius', FLOAT_CACHE[varName]);
+    node.setBoundVariable('bottomRightRadius', FLOAT_CACHE[varName]);
+  }
+}
+
+// ── Value-to-variable lookup tables ──────────────────────────────────────────
+var RADIUS_MAP = {0:'radius/none',2:'radius/sm',4:'radius/DEFAULT',6:'radius/md',8:'radius/lg',12:'radius/xl',16:'radius/2xl',24:'radius/3xl',9999:'radius/full'};
+var FONT_SIZE_MAP = {12:'font-size/xs',14:'font-size/sm',16:'font-size/base',18:'font-size/lg',20:'font-size/xl',24:'font-size/2xl',30:'font-size/3xl',36:'font-size/4xl',48:'font-size/5xl'};
+
+// Set cornerRadius and bind to the closest radius variable
+function setRadius(node, value) {
+  node.cornerRadius = value;
+  var varName = RADIUS_MAP[value];
+  if (varName) bindRadius(node, varName);
+}
+
+// Set fontSize on a text node and bind to the closest font-size variable
+function setFontSize(node, value) {
+  node.fontSize = value;
+  var varName = FONT_SIZE_MAP[value];
+  if (varName) bindFloat(node, 'fontSize', varName);
+}
+
+// Spacing value → variable name mapping
+var SPACING_MAP = {0:'spacing/0',1:'spacing/px',2:'spacing/0-5',4:'spacing/1',6:'spacing/1-5',8:'spacing/2',10:'spacing/2-5',12:'spacing/3',14:'spacing/3-5',16:'spacing/4',20:'spacing/5',24:'spacing/6',28:'spacing/7',32:'spacing/8',36:'spacing/9',40:'spacing/10',44:'spacing/11',48:'spacing/12',56:'spacing/14',64:'spacing/16',80:'spacing/20',96:'spacing/24'};
+
+// Set padding on all sides and bind to spacing variable
+function setPadding(node, value) {
+  node.paddingTop = node.paddingBottom = node.paddingLeft = node.paddingRight = value;
+  var varName = SPACING_MAP[value];
+  if (varName) {
+    bindFloat(node, 'paddingTop', varName);
+    bindFloat(node, 'paddingBottom', varName);
+    bindFloat(node, 'paddingLeft', varName);
+    bindFloat(node, 'paddingRight', varName);
+  }
+}
+
+// Set horizontal padding (left + right) and bind
+function setPaddingH(node, value) {
+  node.paddingLeft = node.paddingRight = value;
+  var varName = SPACING_MAP[value];
+  if (varName) {
+    bindFloat(node, 'paddingLeft', varName);
+    bindFloat(node, 'paddingRight', varName);
+  }
+}
+
+// Set vertical padding (top + bottom) and bind
+function setPaddingV(node, value) {
+  node.paddingTop = node.paddingBottom = value;
+  var varName = SPACING_MAP[value];
+  if (varName) {
+    bindFloat(node, 'paddingTop', varName);
+    bindFloat(node, 'paddingBottom', varName);
+  }
+}
+
+// Set itemSpacing and bind to spacing variable
+function setGap(node, value) {
+  node.itemSpacing = value;
+  var varName = SPACING_MAP[value];
+  if (varName) bindFloat(node, 'itemSpacing', varName);
 }
 
 // ── Icon cache — populated before component builders run ──────────────────────
@@ -968,14 +901,14 @@ function buildButtonPage(page) {
         comp.name = 'Variant=' + v.label + ', Size=' + sz.label + ', State=' + state;
         comp.resize(sz.w, sz.h);
         // Clamp radius to half the height so small buttons never over-round
-        comp.cornerRadius = Math.min(S.radius, Math.floor(sz.h / 2));
+        setRadius(comp, Math.min(S.radius, Math.floor(sz.h / 2)));
         comp.clipsContent = true;
         comp.layoutMode = 'HORIZONTAL';
         comp.primaryAxisSizingMode = 'FIXED';
         comp.counterAxisSizingMode = 'FIXED';
         comp.primaryAxisAlignItems = 'CENTER';
         comp.counterAxisAlignItems = 'CENTER';
-        comp.paddingLeft = comp.paddingRight = sz.px;
+        setPaddingH(comp, sz.px);
 
         var bgPaint;
         if (state === 'Hover' && v.hBgTok) {
@@ -1081,8 +1014,8 @@ function buildButtonGroupPage(page) {
     groupComp.counterAxisSizingMode = 'AUTO';
     groupComp.primaryAxisAlignItems = 'MIN';
     groupComp.counterAxisAlignItems = 'CENTER';
-    groupComp.itemSpacing = GAP;
-    groupComp.paddingLeft = groupComp.paddingRight = groupComp.paddingTop = groupComp.paddingBottom = 0;
+    setGap(groupComp, GAP);
+    setPadding(groupComp, 0);
 
     btns.forEach(function(variantLabel, idx) {
       var src = getButtonComp(variantLabel, 'Default', 'Default');
@@ -1143,8 +1076,8 @@ function buildLabelPage(page) {
     comp.counterAxisSizingMode = 'AUTO';
     comp.primaryAxisAlignItems = 'MIN';
     comp.counterAxisAlignItems = 'CENTER';
-    comp.itemSpacing = 0;
-    comp.paddingLeft = comp.paddingRight = comp.paddingTop = comp.paddingBottom = 0;
+    setGap(comp, 0);
+    setPadding(comp, 0);
 
     var t = figma.createText();
     t.characters = d.text;
@@ -1214,8 +1147,8 @@ function buildFormFieldPage(page) {
     comp.layoutMode = 'VERTICAL';
     comp.primaryAxisSizingMode = 'AUTO';
     comp.counterAxisSizingMode = 'AUTO';
-    comp.itemSpacing = LBL_GAP;
-    comp.paddingLeft = comp.paddingRight = comp.paddingTop = comp.paddingBottom = 0;
+    setGap(comp, LBL_GAP);
+    setPadding(comp, 0);
 
     // Label row (instance or fallback text)
     var lbl = makeLabelInst(labelText, labelState);
@@ -1254,8 +1187,8 @@ function buildFormFieldPage(page) {
     comp.counterAxisSizingMode = 'AUTO';
     comp.primaryAxisAlignItems = 'MIN';
     comp.counterAxisAlignItems = 'CENTER';
-    comp.itemSpacing = CTRL_GAP;
-    comp.paddingLeft = comp.paddingRight = comp.paddingTop = comp.paddingBottom = 0;
+    setGap(comp, CTRL_GAP);
+    setPadding(comp, 0);
 
     if (ctrlComp) {
       var ctrlInst = ctrlComp.createInstance();
@@ -1270,8 +1203,8 @@ function buildFormFieldPage(page) {
     textGroup.layoutMode = 'VERTICAL';
     textGroup.primaryAxisSizingMode = 'AUTO';
     textGroup.counterAxisSizingMode = 'AUTO';
-    textGroup.itemSpacing = 2;
-    textGroup.paddingLeft = textGroup.paddingRight = textGroup.paddingTop = textGroup.paddingBottom = 0;
+    setGap(textGroup, 2);
+    setPadding(textGroup, 0);
 
     var lbl = figma.createText();
     lbl.characters = labelText;
@@ -1405,14 +1338,14 @@ function buildInputPage(page) {
     var comp = figma.createComponent();
     comp.name = 'State=' + s.label;
     comp.resize(S.inputW, S.inputH);
-    comp.cornerRadius = S.radius;
+    setRadius(comp, S.radius);
     comp.clipsContent = true;
     comp.layoutMode = 'HORIZONTAL';
     comp.primaryAxisSizingMode = 'FIXED';
     comp.counterAxisSizingMode = 'FIXED';
     comp.primaryAxisAlignItems = 'MIN';
     comp.counterAxisAlignItems = 'CENTER';
-    comp.paddingLeft = comp.paddingRight = 12;
+    setPaddingH(comp, 12);
     comp.fills = [vp(s.bgTok, s.bg)];
     comp.strokes = s.label === 'Error' ? [solidPaint('#ef4444')] : [vp(s.brdTok, s.border)];
     comp.strokeWeight = s.sw;
@@ -1448,14 +1381,14 @@ function buildTextareaPage(page) {
     var comp = figma.createComponent();
     comp.name = 'State=' + s.label;
     comp.resize(S.inputW, S.textareH);
-    comp.cornerRadius = S.radius;
+    setRadius(comp, S.radius);
     comp.clipsContent = true;
     comp.layoutMode = 'HORIZONTAL';
     comp.primaryAxisSizingMode = 'FIXED';
     comp.counterAxisSizingMode = 'FIXED';
     comp.primaryAxisAlignItems = 'MIN';
     comp.counterAxisAlignItems = 'MIN';
-    comp.paddingLeft = comp.paddingRight = comp.paddingTop = comp.paddingBottom = 12;
+    setPadding(comp, 12);
     comp.fills = [vp('textarea/background', s.bg)];
     comp.strokes = [solidPaint(s.border)];
     comp.strokeWeight = s.sw;
@@ -1490,16 +1423,16 @@ function buildSelectPage(page) {
     var comp = figma.createComponent();
     comp.name = 'State=' + s.label;
     comp.resize(S.inputW, S.inputH);
-    comp.cornerRadius = S.radius;
+    setRadius(comp, S.radius);
     comp.clipsContent = true;
     comp.layoutMode = 'HORIZONTAL';
     comp.primaryAxisSizingMode = 'FIXED';
     comp.counterAxisSizingMode = 'FIXED';
     comp.primaryAxisAlignItems = 'MIN';
     comp.counterAxisAlignItems = 'CENTER';
-    comp.paddingLeft = 12;
-    comp.paddingRight = 8;
-    comp.itemSpacing = 4;
+    comp.paddingLeft = 12; bindFloat(comp, 'paddingLeft', 'spacing/3');
+    comp.paddingRight = 8; bindFloat(comp, 'paddingRight', 'spacing/2');
+    setGap(comp, 4);
     comp.fills = [vp('select/background', '#ffffff')];
     comp.strokes = [vp('select/border', s.border)];
     comp.strokeWeight = s.sw;
@@ -1536,21 +1469,21 @@ function buildSwitchPage(page) {
     var comp = figma.createComponent();
     comp.name = s.label;
     comp.resize(S.switchW, S.switchH);
-    comp.cornerRadius = S.switchH / 2;
+    setRadius(comp, S.switchH / 2);
     comp.clipsContent = true;
     comp.layoutMode = 'HORIZONTAL';
     comp.primaryAxisSizingMode = 'FIXED';
     comp.counterAxisSizingMode = 'FIXED';
     comp.primaryAxisAlignItems = s.checked ? 'MAX' : 'MIN';
     comp.counterAxisAlignItems = 'CENTER';
-    comp.paddingLeft = comp.paddingRight = comp.paddingTop = comp.paddingBottom = 3;
+    setPadding(comp, 3);
     comp.fills = [vp(s.checked ? 'switch/track-checked' : 'switch/track-unchecked', s.checked ? '#18181b' : '#e4e4e7')];
     if (s.disabled) comp.opacity = 0.4;
     var tSz = S.switchH - 6;
     var thumb = figma.createFrame();
     thumb.name = 'thumb';
     thumb.resize(tSz, tSz);
-    thumb.cornerRadius = tSz / 2;
+    setRadius(thumb, tSz / 2);
     thumb.fills = [vp('switch/thumb', '#ffffff')];
     comp.appendChild(thumb);
     thumb.layoutSizingHorizontal = 'FIXED';
@@ -1578,7 +1511,7 @@ function buildCheckboxPage(page) {
     var comp = figma.createComponent();
     comp.name = s.label;
     comp.resize(16, 16);
-    comp.cornerRadius = Math.min(S.radius, 4);
+    setRadius(comp, Math.min(S.radius, 4));
     comp.clipsContent = true;
     comp.layoutMode = 'HORIZONTAL';
     comp.primaryAxisSizingMode = 'FIXED';
@@ -1598,7 +1531,7 @@ function buildCheckboxPage(page) {
       var dash = figma.createFrame();
       dash.name = 'dash';
       dash.resize(10, 2);
-      dash.cornerRadius = 1;
+      setRadius(dash, 1);
       dash.fills = [solidPaint('#18181b')];
       comp.appendChild(dash);
       dash.layoutSizingHorizontal = 'FIXED';
@@ -1626,7 +1559,7 @@ function buildRadioPage(page) {
     var comp = figma.createComponent();
     comp.name = s.label;
     comp.resize(18, 18);
-    comp.cornerRadius = 9;
+    setRadius(comp, 9);
     comp.clipsContent = true;
     comp.layoutMode = 'HORIZONTAL';
     comp.primaryAxisSizingMode = 'FIXED';
@@ -1642,7 +1575,7 @@ function buildRadioPage(page) {
       var dot = figma.createFrame();
       dot.name = 'dot';
       dot.resize(8, 8);
-      dot.cornerRadius = 4;
+    setRadius(dot, 4);
       dot.fills = [vp('radio/indicator', '#18181b')];
       comp.appendChild(dot);
       dot.layoutSizingHorizontal = 'FIXED';
@@ -1675,21 +1608,21 @@ function buildSliderPage(page) {
     var track = figma.createFrame();
     track.name = 'track';
     track.resize(240, 6);
-    track.cornerRadius = 3;
+    setRadius(track, 3);
     track.fills = [vp('slider/track-background', '#e4e4e7')];
     track.x = 0; track.y = 7;
     comp.appendChild(track);
     var range = figma.createFrame();
     range.name = 'range';
     range.resize(Math.round(240 * s.value / 100), 6);
-    range.cornerRadius = 3;
+    setRadius(range, 3);
     range.fills = [vp('slider/range', '#18181b')];
     range.x = 0; range.y = 7;
     comp.appendChild(range);
     var thumb = figma.createFrame();
     thumb.name = 'thumb';
     thumb.resize(20, 20);
-    thumb.cornerRadius = 10;
+    setRadius(thumb, 10);
     thumb.fills = [vp('slider/thumb', '#ffffff')];
     thumb.strokes = [vp('slider/thumb-border', '#18181b')];
     thumb.strokeWeight = 2;
@@ -1718,14 +1651,14 @@ function buildBadgePage(page) {
     comp.name = 'Variant=' + v.label;
     comp.resize(40, S.badgeH);
     // 999 = full pill; clamp to half height so Figma doesn't error
-    comp.cornerRadius = Math.min(S.badgeR, Math.floor(S.badgeH / 2));
+    setRadius(comp, Math.min(S.badgeR, Math.floor(S.badgeH / 2)));
     comp.clipsContent = true;
     comp.layoutMode = 'HORIZONTAL';
     comp.primaryAxisSizingMode = 'AUTO';
     comp.counterAxisSizingMode = 'FIXED';
     comp.primaryAxisAlignItems = 'CENTER';
     comp.counterAxisAlignItems = 'CENTER';
-    comp.paddingLeft = comp.paddingRight = 8;
+    setPaddingH(comp, 8);
     comp.fills = v.bgTok ? [vp(v.bgTok, v.bg)] : [solidPaint(v.bg)];
     if (v.border) {
       comp.strokes = [vp(v.brdTok || '', v.border)];
@@ -1758,16 +1691,15 @@ function buildCardPage(page) {
     var comp = figma.createComponent();
     comp.name = v.label;
     comp.resize(320, 200);
-    comp.cornerRadius = S.cardR;
+    setRadius(comp, S.cardR);
     comp.clipsContent = true;
     comp.layoutMode = 'VERTICAL';
     comp.primaryAxisSizingMode = 'FIXED';
     comp.counterAxisSizingMode = 'FIXED';
     comp.primaryAxisAlignItems = 'MIN';
     comp.counterAxisAlignItems = 'MIN';
-    comp.paddingLeft = comp.paddingRight = 0;
-    comp.paddingTop = comp.paddingBottom = 0;
-    comp.itemSpacing = 0;
+    setPadding(comp, 0);
+    setGap(comp, 0);
     comp.fills = [vp(v.bgTok, v.bg)];
     comp.strokes = [vp(v.brdTok, v.border)];
     comp.strokeWeight = 1;
@@ -1781,13 +1713,12 @@ function buildCardPage(page) {
     header.layoutMode = 'VERTICAL';
     header.primaryAxisSizingMode = 'AUTO';
     header.counterAxisSizingMode = 'AUTO';
-    header.itemSpacing = 6;
-    header.paddingLeft = header.paddingRight = 20;
-    header.paddingTop = header.paddingBottom = 20;
+    setGap(header, 6);
+    setPadding(header, 20);
 
     var ct = figma.createText();
     ct.characters = 'Card Title';
-    ct.fontSize = 16;
+    setFontSize(ct, 16);
     ct.fontName = fontName('Semi Bold');
     ct.fills = [vp(v.fgTok, v.title)];
     header.appendChild(ct);
@@ -1795,7 +1726,7 @@ function buildCardPage(page) {
     ct.layoutSizingVertical = 'HUG';
     var cd = figma.createText();
     cd.characters = 'Card description goes here.';
-    cd.fontSize = 13;
+    setFontSize(cd, 13);
     cd.fontName = fontName('Regular');
     cd.fills = [solidPaint(v.desc)];
     header.appendChild(cd);
@@ -1820,13 +1751,12 @@ function buildCardPage(page) {
     footer.layoutMode = 'HORIZONTAL';
     footer.primaryAxisSizingMode = 'AUTO';
     footer.counterAxisSizingMode = 'AUTO';
-    footer.paddingLeft = footer.paddingRight = 20;
-    footer.paddingTop = footer.paddingBottom = 16;
+    setPaddingH(footer, 20); setPaddingV(footer, 16);
 
     var btn = figma.createFrame();
     btn.name = 'action-btn';
     btn.resize(84, 32);
-    btn.cornerRadius = 6;
+    setRadius(btn, 6);
     btn.layoutMode = 'HORIZONTAL';
     btn.primaryAxisSizingMode = 'FIXED';
     btn.counterAxisSizingMode = 'FIXED';
@@ -1839,7 +1769,7 @@ function buildCardPage(page) {
     footer.appendChild(btn);
     var ft = figma.createText();
     ft.characters = 'Action';
-    ft.fontSize = 12;
+    setFontSize(ft, 12);
     ft.fontName = fontName('Medium');
     ft.fills = [{ type:'SOLID', color:v.btnFg }];
     btn.appendChild(ft);
@@ -1863,16 +1793,15 @@ function buildAlertPage(page) {
     var comp = figma.createComponent();
     comp.name = v.label;
     comp.resize(480, 72);
-    comp.cornerRadius = S.alertR;
+    setRadius(comp, S.alertR);
     comp.clipsContent = true;
     comp.layoutMode = 'HORIZONTAL';
     comp.primaryAxisSizingMode = 'FIXED';
     comp.counterAxisSizingMode = 'FIXED';
     comp.primaryAxisAlignItems = 'MIN';
     comp.counterAxisAlignItems = 'CENTER';
-    comp.paddingLeft = comp.paddingRight = 16;
-    comp.paddingTop = comp.paddingBottom = 12;
-    comp.itemSpacing = 12;
+    setPaddingH(comp, 16); setPaddingV(comp, 12);
+    setGap(comp, 12);
     comp.fills = [vp(v.bgTok, v.bg)];
     comp.strokes = [vp(v.brdTok, v.border)];
     comp.strokeWeight = 1;
@@ -1892,8 +1821,8 @@ function buildAlertPage(page) {
     textGroup.layoutMode = 'VERTICAL';
     textGroup.primaryAxisSizingMode = 'AUTO';
     textGroup.counterAxisSizingMode = 'AUTO';
-    textGroup.itemSpacing = 4;
-    textGroup.paddingLeft = textGroup.paddingRight = textGroup.paddingTop = textGroup.paddingBottom = 0;
+    setGap(textGroup, 4);
+    setPadding(textGroup, 0);
 
     var aTitle = figma.createText();
     aTitle.characters = v.title;
@@ -1905,7 +1834,7 @@ function buildAlertPage(page) {
     aTitle.layoutSizingVertical = 'HUG';
     var aDesc = figma.createText();
     aDesc.characters = v.desc;
-    aDesc.fontSize = 13;
+    setFontSize(aDesc, 13);
     aDesc.fontName = fontName('Regular');
     aDesc.fills = [vp(v.dscTok, v.descColor)];
     textGroup.appendChild(aDesc);
@@ -1932,16 +1861,15 @@ function buildToastPage(page) {
     var comp = figma.createComponent();
     comp.name = v.label;
     comp.resize(340, 64);
-    comp.cornerRadius = S.alertR;
+    setRadius(comp, S.alertR);
     comp.clipsContent = true;
     comp.layoutMode = 'HORIZONTAL';
     comp.primaryAxisSizingMode = 'FIXED';
     comp.counterAxisSizingMode = 'FIXED';
     comp.primaryAxisAlignItems = 'MIN';
     comp.counterAxisAlignItems = 'CENTER';
-    comp.paddingLeft = comp.paddingRight = 12;
-    comp.paddingTop = comp.paddingBottom = 0;
-    comp.itemSpacing = 8;
+    setPaddingH(comp, 12); setPaddingV(comp, 0);
+    setGap(comp, 8);
     comp.fills = [vp(v.bgTok, v.bg)];
     comp.strokes = [vp(v.brdTok, v.border)];
     comp.strokeWeight = 1;
@@ -1962,12 +1890,12 @@ function buildToastPage(page) {
     textGroup.layoutMode = 'VERTICAL';
     textGroup.primaryAxisSizingMode = 'AUTO';
     textGroup.counterAxisSizingMode = 'AUTO';
-    textGroup.itemSpacing = 2;
-    textGroup.paddingLeft = textGroup.paddingRight = textGroup.paddingTop = textGroup.paddingBottom = 0;
+    setGap(textGroup, 2);
+    setPadding(textGroup, 0);
 
     var ttitle = figma.createText();
     ttitle.characters = v.title;
-    ttitle.fontSize = 13;
+    setFontSize(ttitle, 13);
     ttitle.fontName = fontName('Semi Bold');
     ttitle.fills = [vp('toast/foreground', '#18181b')];
     textGroup.appendChild(ttitle);
@@ -1975,7 +1903,7 @@ function buildToastPage(page) {
     ttitle.layoutSizingVertical = 'HUG';
     var tdesc = figma.createText();
     tdesc.characters = v.desc;
-    tdesc.fontSize = 12;
+    setFontSize(tdesc, 12);
     tdesc.fontName = fontName('Regular');
     tdesc.fills = [solidPaint('#71717a')];
     textGroup.appendChild(tdesc);
@@ -1988,7 +1916,7 @@ function buildToastPage(page) {
     var btn = figma.createFrame();
     btn.name = 'action-btn';
     btn.resize(48, 28);
-    btn.cornerRadius = 5;
+    setRadius(btn, 5);
     btn.layoutMode = 'HORIZONTAL';
     btn.primaryAxisSizingMode = 'FIXED';
     btn.counterAxisSizingMode = 'FIXED';
@@ -2000,7 +1928,7 @@ function buildToastPage(page) {
     btn.layoutSizingVertical = 'FIXED';
     var tu = figma.createText();
     tu.characters = 'Undo';
-    tu.fontSize = 12;
+    setFontSize(tu, 12);
     tu.fontName = fontName('Medium');
     tu.fills = [vp('toast/action-foreground', '#18181b')];
     btn.appendChild(tu);
@@ -2018,15 +1946,15 @@ function buildDialogPage(page) {
   var comp = figma.createComponent();
   comp.name = 'Variant=Default';
   comp.resize(480, 260);
-  comp.cornerRadius = S.cardR;
+  setRadius(comp, S.cardR);
   comp.clipsContent = true;
   comp.layoutMode = 'VERTICAL';
   comp.primaryAxisSizingMode = 'FIXED';
   comp.counterAxisSizingMode = 'FIXED';
   comp.primaryAxisAlignItems = 'MIN';
   comp.counterAxisAlignItems = 'MIN';
-  comp.paddingLeft = comp.paddingRight = comp.paddingTop = comp.paddingBottom = 24;
-  comp.itemSpacing = 16;
+  setPadding(comp, 24);
+  setGap(comp, 16);
   comp.fills = [vp('dialog/background', '#ffffff')];
   comp.strokes = [vp('dialog/border', '#e4e4e7')];
   comp.strokeWeight = 1;
@@ -2035,7 +1963,7 @@ function buildDialogPage(page) {
 
   var dtitle = figma.createText();
   dtitle.characters = 'Edit Profile';
-  dtitle.fontSize = 18;
+  setFontSize(dtitle, 18);
   dtitle.fontName = fontName('Semi Bold');
   dtitle.fills = [vp('dialog/foreground', '#18181b')];
   comp.appendChild(dtitle);
@@ -2044,7 +1972,7 @@ function buildDialogPage(page) {
 
   var ddesc = figma.createText();
   ddesc.characters = 'Make changes to your profile here.';
-  ddesc.fontSize = 13;
+  setFontSize(ddesc, 13);
   ddesc.fontName = fontName('Regular');
   ddesc.fills = [solidPaint('#71717a')];
   comp.appendChild(ddesc);
@@ -2054,13 +1982,13 @@ function buildDialogPage(page) {
   var inp = figma.createFrame();
   inp.name = 'field';
   inp.resize(432, S.inputH);
-  inp.cornerRadius = S.radius;
+  setRadius(inp, S.radius);
   inp.layoutMode = 'HORIZONTAL';
   inp.primaryAxisSizingMode = 'FIXED';
   inp.counterAxisSizingMode = 'FIXED';
   inp.primaryAxisAlignItems = 'MIN';
   inp.counterAxisAlignItems = 'CENTER';
-  inp.paddingLeft = inp.paddingRight = 12;
+  setPaddingH(inp, 12);
   inp.fills = [solidPaint('#ffffff')];
   inp.strokes = [solidPaint('#e4e4e7')];
   inp.strokeWeight = 1;
@@ -2071,7 +1999,7 @@ function buildDialogPage(page) {
 
   var iph = figma.createText();
   iph.characters = 'Pedro Duarte';
-  iph.fontSize = 13;
+  setFontSize(iph, 13);
   iph.fontName = fontName('Regular');
   iph.fills = [solidPaint('#18181b')];
   inp.appendChild(iph);
@@ -2087,8 +2015,8 @@ function buildDialogPage(page) {
   actions.counterAxisSizingMode = 'AUTO';
   actions.primaryAxisAlignItems = 'MAX';
   actions.counterAxisAlignItems = 'CENTER';
-  actions.itemSpacing = 8;
-  actions.paddingLeft = actions.paddingRight = actions.paddingTop = actions.paddingBottom = 0;
+  setGap(actions, 8);
+  setPadding(actions, 0);
   comp.appendChild(actions);
   actions.layoutSizingHorizontal = 'FILL';
   actions.layoutSizingVertical = 'HUG';
@@ -2096,7 +2024,7 @@ function buildDialogPage(page) {
   var cancel = figma.createFrame();
   cancel.name = 'cancel-btn';
   cancel.resize(90, S.btnH);
-  cancel.cornerRadius = S.radius;
+  setRadius(cancel, S.radius);
   cancel.layoutMode = 'HORIZONTAL';
   cancel.primaryAxisSizingMode = 'FIXED';
   cancel.counterAxisSizingMode = 'FIXED';
@@ -2107,7 +2035,7 @@ function buildDialogPage(page) {
 
   var ct2 = figma.createText();
   ct2.characters = 'Cancel';
-  ct2.fontSize = 13;
+  setFontSize(ct2, 13);
   ct2.fontName = fontName('Medium');
   ct2.fills = [solidPaint('#18181b')];
   cancel.appendChild(ct2);
@@ -2117,7 +2045,7 @@ function buildDialogPage(page) {
   var save = figma.createFrame();
   save.name = 'save-btn';
   save.resize(90, S.btnH);
-  save.cornerRadius = S.radius;
+  setRadius(save, S.radius);
   save.layoutMode = 'HORIZONTAL';
   save.primaryAxisSizingMode = 'FIXED';
   save.counterAxisSizingMode = 'FIXED';
@@ -2128,7 +2056,7 @@ function buildDialogPage(page) {
 
   var st2 = figma.createText();
   st2.characters = 'Save';
-  st2.fontSize = 13;
+  setFontSize(st2, 13);
   st2.fontName = fontName('Medium');
   st2.fills = [{ type:'SOLID', color:{r:1,g:1,b:1} }];
   save.appendChild(st2);
@@ -2216,8 +2144,8 @@ function buildCanvasComponents(selectedComponents, options, fontFamily) {
   ICON_CACHE      = {};
   ACTIVE_ICON_LIB = options.iconLibrary || '';
   if (ACTIVE_ICON_LIB === 'lucide' || ACTIVE_ICON_LIB === 'iconnoir') {
-    var iconsData    = ACTIVE_ICON_LIB === 'lucide' ? LUCIDE_ICONS : ICONNOIR_ICONS;
-    var libLabel     = ACTIVE_ICON_LIB === 'lucide' ? 'Lucide' : 'Iconnoir';
+    var iconsData    = RUNTIME_ICONS;
+    var libLabel     = ACTIVE_ICON_LIB === 'lucide' ? 'Lucide' : 'Iconoir';
     var iconPageName = 'Icons \u2014 ' + libLabel;
     var iconPg       = getOrCreatePage(iconPageName);
     clearPage(iconPg);
@@ -2344,12 +2272,23 @@ figma.ui.onmessage = async function(msg) {
         createComponentCollection(opts.components, themeResult.variableMap, primResult.variableMap);
       }
 
+      // Accept icon data from UI (fetched from CDN)
+      if (opts.iconData && typeof opts.iconData === 'object') {
+        RUNTIME_ICONS = opts.iconData;
+      }
+
       if (opts.createCanvas) {
         var fontFamily = opts.fontFamily || 'Inter';
         sendProgress('Loading fonts…', 70);
 
-        // Load each style individually — record which ones succeed
+        // Always load Inter Regular — Figma's default font for new text nodes
         LOADED_STYLES = {};
+        try {
+          await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
+          LOADED_STYLES['Inter/Regular'] = true;
+        } catch(e) { /* Inter not available */ }
+
+        // Load each style of the selected font
         var stylesToLoad = ['Regular', 'Medium', 'Semi Bold', 'Bold'];
         for (var fi = 0; fi < stylesToLoad.length; fi++) {
           try {

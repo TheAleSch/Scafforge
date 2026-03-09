@@ -998,13 +998,90 @@
       }
     });
 
-    // ── Icon library segmented control ───────────────────────────────────────
+    // ── Icon library: fetch from CDN ──────────────────────────────────────────
     var activeIconLib = 'lucide';
+    var iconCache = { lucide: null, iconnoir: null };
+    var iconFetchStatus = { lucide: 'idle', iconnoir: 'idle' };
+
+    // Convert Lucide icon-nodes.json format to { name: svgInnerHTML }
+    function lucideNodesToSvg(nodes) {
+      var result = {};
+      Object.keys(nodes).forEach(function(name) {
+        var parts = nodes[name];
+        var html = '';
+        parts.forEach(function(el) {
+          var tag = el[0]; var attrs = el[1] || {};
+          html += '<' + tag;
+          Object.keys(attrs).forEach(function(k) { html += ' ' + k + '="' + attrs[k] + '"'; });
+          html += '/>';
+        });
+        result[name] = html;
+      });
+      return result;
+    }
+
+    // Fetch all Iconoir SVGs: get file list, then batch-fetch SVGs
+    function fetchIconoirIcons() {
+      iconFetchStatus.iconnoir = 'loading';
+      return fetch('https://data.jsdelivr.com/v1/packages/npm/iconoir@7.11.0?structure=flat')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var svgFiles = data.files.filter(function(f) {
+            return f.name.indexOf('/icons/regular/') === 0 && f.name.endsWith('.svg');
+          });
+          var result = {};
+          var promises = svgFiles.map(function(f) {
+            var iconName = f.name.replace('/icons/regular/', '').replace('.svg', '');
+            return fetch('https://cdn.jsdelivr.net/npm/iconoir@7.11.0' + f.name)
+              .then(function(r) { return r.text(); })
+              .then(function(svg) {
+                var inner = svg.replace(/<svg[^>]*>/, '').replace(/<\/svg>/, '').trim();
+                if (inner) result[iconName] = inner;
+              })
+              .catch(function() { /* skip failed icons */ });
+          });
+          return Promise.all(promises).then(function() { return result; });
+        });
+    }
+
+    function fetchLucideIcons() {
+      iconFetchStatus.lucide = 'loading';
+      return fetch('https://unpkg.com/lucide-static@latest/icon-nodes.json')
+        .then(function(r) { return r.json(); })
+        .then(function(nodes) { return lucideNodesToSvg(nodes); });
+    }
+
+    function fetchIcons(lib) {
+      if (iconCache[lib]) return Promise.resolve(iconCache[lib]);
+      if (iconFetchStatus[lib] === 'loading') {
+        // Already loading, wait via polling
+        return new Promise(function(resolve) {
+          var iv = setInterval(function() {
+            if (iconCache[lib]) { clearInterval(iv); resolve(iconCache[lib]); }
+          }, 200);
+        });
+      }
+      var p = lib === 'lucide' ? fetchLucideIcons() : fetchIconoirIcons();
+      return p.then(function(data) {
+        iconCache[lib] = data;
+        iconFetchStatus[lib] = 'done';
+        return data;
+      }).catch(function(err) {
+        iconFetchStatus[lib] = 'error';
+        console.error('Failed to fetch ' + lib + ' icons:', err);
+        return {};
+      });
+    }
+
+    // Pre-fetch the default library
+    fetchIcons('lucide');
     document.querySelectorAll('#iconLibSeg .seg-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
         document.querySelectorAll('#iconLibSeg .seg-btn').forEach(function(b) { b.classList.remove('active'); });
         btn.classList.add('active');
         activeIconLib = btn.dataset.value;
+        // Pre-fetch the selected library
+        fetchIcons(activeIconLib);
       });
     });
 
@@ -1024,23 +1101,34 @@
         });
       }
 
-      parent.postMessage({
-        pluginMessage: {
-          type: 'generate',
-          options: {
-            theme:                 activeTheme,
-            style:                 activeStyle,
-            components:            Array.from(selected),
-            canvasComponents:      Array.from(selected),
-            includeSemanticTokens: document.getElementById('semanticToggle').checked,
-            createCanvas:          canvasToggle.checked,
-            pageMode:              pageMode,
-            coverPage:             document.getElementById('coverPageToggle').checked,
-            fontFamily:            document.getElementById('fontSelect').value,
-            iconLibrary:           activeIconLib,
+      // Fetch icons if canvas is enabled and an icon lib is selected
+      var iconPromise = (canvasToggle.checked && activeIconLib)
+        ? (function() {
+            document.getElementById('progressText').textContent = 'Fetching ' + activeIconLib + ' icons…';
+            return fetchIcons(activeIconLib);
+          })()
+        : Promise.resolve(null);
+
+      iconPromise.then(function(iconData) {
+        parent.postMessage({
+          pluginMessage: {
+            type: 'generate',
+            options: {
+              theme:                 activeTheme,
+              style:                 activeStyle,
+              components:            Array.from(selected),
+              canvasComponents:      Array.from(selected),
+              includeSemanticTokens: document.getElementById('semanticToggle').checked,
+              createCanvas:          canvasToggle.checked,
+              pageMode:              pageMode,
+              coverPage:             document.getElementById('coverPageToggle').checked,
+              fontFamily:            document.getElementById('fontSelect').value,
+              iconLibrary:           activeIconLib,
+              iconData:              iconData,
+            }
           }
-        }
-      }, '*');
+        }, '*');
+      });
     });
 
     // ── More menu ──
