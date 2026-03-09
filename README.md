@@ -70,7 +70,16 @@ border/highlight    ← accent border
 border/focus        ← focus ring
 ```
 
-The pattern is always `category/intent-level`. You never have to wonder whether to use `muted`, `accent`, or `secondary` — you just pick a neutral at the right level. Foreground is always `fg/`, background is always `bg/`, border is always `border/`. No ambiguity.
+The naming convention follows a `category/intent-level-modifier` pattern:
+
+- **Category** — what the token controls: `fg/`, `bg/`, or `border/`
+- **Intent** — the semantic purpose: `neutral`, `highlight`, `destructive`, `alert`, `info`, `positive`
+- **Level** — numeric scale for intensity variants: `-1`, `-2`, `-3`
+- **Modifier** — optional interaction state: `-hover`
+
+For example, `bg/highlight-hover` is a background token for the primary action in its hover state, and `fg/destructive-2` is a secondary-level destructive foreground color.
+
+You never have to wonder whether to use `muted`, `accent`, or `secondary` — you just pick a neutral at the right level. Foreground is always `fg/`, background is always `bg/`, border is always `border/`. No ambiguity.
 
 Both modes generate full Light + Dark themes and work with all 16 components.
 
