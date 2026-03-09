@@ -83,10 +83,8 @@
       cursor: help; position: relative; flex-shrink: 0;
     }
     .info-icon:hover { opacity: 1; }
-    .info-icon:hover .info-tooltip { display: block; }
     .info-tooltip {
-      display: none; position: absolute; left: 50%; top: calc(100% + 6px);
-      transform: translateX(-50%); z-index: 100;
+      display: none; position: fixed; z-index: 9999;
       background: var(--foreground); color: var(--background);
       font-size: 11px; font-weight: 400; line-height: 1.5;
       text-transform: none; letter-spacing: 0;
@@ -1014,6 +1012,26 @@
   </div>
 
   <script>
+    // ── Info tooltips (fixed positioning) ─────────────────────────────────────
+    document.querySelectorAll('.info-icon').forEach(function(icon) {
+      var tip = icon.querySelector('.info-tooltip');
+      if (!tip) return;
+      icon.addEventListener('mouseenter', function() {
+        var rect = icon.getBoundingClientRect();
+        tip.style.display = 'block';
+        tip.style.left = rect.left + 'px';
+        tip.style.top = (rect.bottom + 6) + 'px';
+        // Keep within viewport
+        var tipRect = tip.getBoundingClientRect();
+        if (tipRect.right > window.innerWidth - 8) {
+          tip.style.left = (window.innerWidth - tipRect.width - 8) + 'px';
+        }
+      });
+      icon.addEventListener('mouseleave', function() {
+        tip.style.display = 'none';
+      });
+    });
+
     // ── Style picker ─────────────────────────────────────────────────────────
     var activeStyle = 'vega';
 
