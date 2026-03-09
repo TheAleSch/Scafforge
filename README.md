@@ -32,6 +32,47 @@ Built with Tailwind 4 as the foundation, with more complex components composed w
 - **Foundation toggles** — Radius, Spacing, Font Sizes, Border Width, Opacity
 - **Figma styles** — Shadow effect styles (sm–2xl + inner) and Text styles (xs–9xl)
 
+## Ale Style Tokens (Beta)
+
+Scafforge ships with an alternative token structure called **Ale Style** — a simpler, more intuitive way to organize semantic tokens.
+
+Traditional shadcn/ui themes use flat, context-heavy names that quickly get confusing:
+
+```
+background, foreground, card, card-foreground, popover, popover-foreground,
+primary, primary-foreground, secondary, secondary-foreground, muted,
+muted-foreground, accent, accent-foreground, destructive,
+destructive-foreground, input, ring, primary-hover, ...
+```
+
+That's 30+ tokens where half are `-foreground` suffixes, names overlap (`muted` vs `secondary` vs `accent` often resolve to the same value), and there's no clear system for when to use what.
+
+**Ale Style groups tokens by what they do** — foreground, background, and border — with a clear naming hierarchy:
+
+```
+fg/neutral-1        ← primary text
+fg/neutral-2        ← secondary text
+fg/neutral-3        ← tertiary/muted text
+fg/highlight-1      ← primary accent text
+fg/over-theme       ← text on colored backgrounds
+fg/destructive-1    ← error text
+
+bg/neutral          ← page background
+bg/neutral-2        ← card/surface background
+bg/highlight        ← primary action fill
+bg/highlight-2      ← subtle accent surface
+bg/destructive      ← error background
+
+border/neutral-1    ← default border
+border/neutral-2    ← subtle border
+border/highlight    ← accent border
+border/focus        ← focus ring
+```
+
+The pattern is always `category/intent-level`. You never have to wonder whether to use `muted`, `accent`, or `secondary` — you just pick a neutral at the right level. Foreground is always `fg/`, background is always `bg/`, border is always `border/`. No ambiguity.
+
+Both modes generate full Light + Dark themes and work with all 16 components.
+
 ## Components
 
 | Group | Components |
