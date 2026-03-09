@@ -2603,18 +2603,28 @@ figma.ui.onmessage = async function(msg) {
     figma.closePlugin();
   }
   if (msg.type === 'clear-file') {
-    // Create a fresh blank page and make it active so we can safely remove all existing pages
-    var freshPage = figma.createPage();
-    freshPage.name = 'Page 1';
-    figma.currentPage = freshPage;
-    // Remove all original pages (now safe since freshPage is active)
-    figma.root.children.slice().forEach(function(page) {
-      if (page !== freshPage) page.remove();
-    });
-    // Remove all variable collections
-    figma.variables.getLocalVariableCollections().forEach(function(col) {
-      col.remove();
-    });
-    figma.ui.postMessage({ type: 'cleared' });
+    try {
+      // Create a fresh blank page and make it active so we can safely remove all existing pages
+      var freshPage = figma.createPage();
+      freshPage.name = 'Page 1';
+      figma.currentPage = freshPage;
+      // Remove all original pages (now safe since freshPage is active)
+      figma.root.children.slice().forEach(function(page) {
+        if (page !== freshPage) page.remove();
+      });
+      // Remove all variable collections
+      figma.variables.getLocalVariableCollections().forEach(function(col) {
+        col.remove();
+      });
+      // Remove all local paint styles
+      figma.getLocalPaintStyles().forEach(function(s) { s.remove(); });
+      // Remove all local effect styles
+      figma.getLocalEffectStyles().forEach(function(s) { s.remove(); });
+      // Remove all local text styles
+      figma.getLocalTextStyles().forEach(function(s) { s.remove(); });
+      figma.ui.postMessage({ type: 'cleared' });
+    } catch (err) {
+      figma.ui.postMessage({ type: 'error', message: 'Clear failed: ' + (err.message || String(err)) });
+    }
   }
 };
