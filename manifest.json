@@ -1,9 +1,11 @@
 {
   "name": "Scafforge",
-  "id": "tw4-shadcn-variables-generator",
+  "id": "1612677598601934351",
   "api": "1.0.0",
   "main": "code.js",
   "ui": "ui.html",
   "editorType": ["figma"],
-  "capabilities": []
+  "capabilities": [],
+  "networkAccess": { "allowedDomains": ["https://unpkg.com", "https://data.jsdelivr.com", "https://cdn.jsdelivr.net"] },
+  "documentAccess": "dynamic-page"
 }
