@@ -2410,6 +2410,15 @@ async function buildCanvasComponents(selectedComponents, options, fontFamily) {
     await clearPage(iconPg);
     await figma.setCurrentPageAsync(iconPg);
     buildIconPage(iconPg, libLabel, iconsData); // also populates ICON_CACHE
+  } else if (ACTIVE_ICON_LIB === 'none') {
+    var genericPg = getOrCreatePage('Icon \u2014 Insert your library here');
+    await clearPage(genericPg);
+    await figma.setCurrentPageAsync(genericPg);
+    // Create the generic Icon component on this page
+    var genericComp = getOrCreateGenericIcon();
+    genericPg.appendChild(genericComp);
+    genericComp.x = 0;
+    genericComp.y = 0;
   }
 
   // Clear stale caches from previous runs
