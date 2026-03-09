@@ -905,7 +905,8 @@ function setGap(node, value) {
 
 // ── Icon cache — populated before component builders run ──────────────────────
 var ICON_CACHE      = {};  // short-name → Component node
-var ACTIVE_ICON_LIB = '';  // 'lucide' | 'iconnoir' | ''
+var ACTIVE_ICON_LIB = '';  // 'lucide' | 'iconnoir' | 'none' | ''
+var GENERIC_ICON_COMP = null; // reusable generic Icon component for 'none' mode
 
 // Semantic icon names → per-library icon names
 var ICON_SEMANTIC = {
@@ -933,9 +934,38 @@ var ICON_SEMANTIC = {
   'chevron-right':{ lucide:'chevron-right',   iconnoir:'nav-arrow-right'},
 };
 
-// Create a 24×24 icon instance by semantic name; returns null if no lib loaded
+// Build a generic 24×24 "Icon" component (used when icon lib is 'none')
+function getOrCreateGenericIcon() {
+  if (GENERIC_ICON_COMP) return GENERIC_ICON_COMP;
+  var comp = figma.createComponent();
+  comp.name = 'Icon';
+  comp.resize(24, 24);
+  comp.fills = [];
+  comp.layoutMode = 'HORIZONTAL';
+  comp.primaryAxisAlignItems = 'CENTER';
+  comp.counterAxisAlignItems = 'CENTER';
+  comp.primaryAxisSizingMode = 'FIXED';
+  comp.counterAxisSizingMode = 'FIXED';
+  // Diamond shape as a generic icon placeholder
+  var diamond = figma.createRectangle();
+  diamond.name = 'shape';
+  diamond.resize(12, 12);
+  diamond.rotation = 45;
+  diamond.fills = [];
+  diamond.strokes = [solidPaint('#71717a')];
+  diamond.strokeWeight = 1.5;
+  diamond.cornerRadius = 2;
+  comp.appendChild(diamond);
+  GENERIC_ICON_COMP = comp;
+  return comp;
+}
+
+// Create a 24×24 icon instance by semantic name; returns generic icon if lib is 'none'
 function getIcon(semanticName) {
   if (!ACTIVE_ICON_LIB) return null;
+  if (ACTIVE_ICON_LIB === 'none') {
+    return getOrCreateGenericIcon().createInstance();
+  }
   var mapping = ICON_SEMANTIC[semanticName];
   if (!mapping) return null;
   var iconName = mapping[ACTIVE_ICON_LIB];
@@ -2370,6 +2400,7 @@ async function buildCanvasComponents(selectedComponents, options, fontFamily) {
 
   // ── Icon library: build page first so ICON_CACHE is ready for all builders ─
   ICON_CACHE      = {};
+  GENERIC_ICON_COMP = null;
   ACTIVE_ICON_LIB = options.iconLibrary || '';
   if (ACTIVE_ICON_LIB === 'lucide' || ACTIVE_ICON_LIB === 'iconnoir') {
     var iconsData    = RUNTIME_ICONS;
