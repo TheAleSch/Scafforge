@@ -449,15 +449,15 @@ function sendProgress(message, percent) {
   figma.ui.postMessage({ type:'progress', message:message, percent:percent });
 }
 
-function removeExistingCollection(name) {
-  figma.variables.getLocalVariableCollections().forEach(function(c) {
+async function removeExistingCollection(name) {
+  (await figma.variables.getLocalVariableCollectionsAsync()).forEach(function(c) {
     if (c.name === name) c.remove();
   });
 }
 
 // ─── Variable Collections ─────────────────────────────────────────────────────
-function createPrimitivesCollection(selectedColors, opacitySteps) {
-  removeExistingCollection('Primitives');
+async function createPrimitivesCollection(selectedColors, opacitySteps) {
+  await removeExistingCollection('Primitives');
   var col = figma.variables.createVariableCollection('Primitives');
   var mid = col.defaultModeId;
   col.renameMode(mid, 'Default');
@@ -498,9 +498,9 @@ function createPrimitivesCollection(selectedColors, opacitySteps) {
   return { collection:col, variableMap:map };
 }
 
-function createThemeCollection(primMap, roles, tokenStructure) {
-  removeExistingCollection('Themes');
-  removeExistingCollection('Ale/Themes');
+async function createThemeCollection(primMap, roles, tokenStructure) {
+  await removeExistingCollection('Themes');
+  await removeExistingCollection('Ale/Themes');
   var colName = tokenStructure === 'improved' ? 'Ale/Themes' : 'Themes';
   var col = figma.variables.createVariableCollection(colName);
   var lightId = col.defaultModeId;
@@ -524,9 +524,9 @@ function createThemeCollection(primMap, roles, tokenStructure) {
   return { collection:col, variableMap:map, lightModeId:lightId, darkModeId:darkId };
 }
 
-function createSizingCollection(opts) {
+async function createSizingCollection(opts) {
   opts = opts || {};
-  removeExistingCollection('Sizing');
+  await removeExistingCollection('Sizing');
   var col = figma.variables.createVariableCollection('Sizing');
   var mid = col.defaultModeId;
   col.renameMode(mid, 'Default');
@@ -640,9 +640,9 @@ async function createTextStyles(fontFamily) {
   });
 }
 
-function createComponentCollection(selectedComponents, themeMap, primMap) {
+async function createComponentCollection(selectedComponents, themeMap, primMap) {
   if (!selectedComponents.length) return;
-  removeExistingCollection('shadcn / Components');
+  await removeExistingCollection('shadcn / Components');
   var col    = figma.variables.createVariableCollection('shadcn / Components');
   var lightId = col.defaultModeId;
   col.renameMode(lightId, 'Light');
@@ -782,13 +782,13 @@ function sectionLabel(parent, text, x, y) {
 var VAR_CACHE = null;
 var FLOAT_CACHE = null;
 
-function buildVarCache() {
+async function buildVarCache() {
   VAR_CACHE = {};
-  figma.variables.getLocalVariables('COLOR').forEach(function(v) {
+  (await figma.variables.getLocalVariablesAsync('COLOR')).forEach(function(v) {
     VAR_CACHE[v.name] = v;
   });
   FLOAT_CACHE = {};
-  figma.variables.getLocalVariables('FLOAT').forEach(function(v) {
+  (await figma.variables.getLocalVariablesAsync('FLOAT')).forEach(function(v) {
     FLOAT_CACHE[v.name] = v;
   });
 }
@@ -2365,7 +2365,7 @@ function clearPage(page) {
 async function buildCanvasComponents(selectedComponents, options, fontFamily) {
   CANVAS_FONT = fontFamily || 'Inter';
   S = STYLE_PRESETS[options.style] || STYLE_PRESETS.vega;
-  buildVarCache(); // populate VAR_CACHE so vp() can bind variables
+  await buildVarCache(); // populate VAR_CACHE so vp() can bind variables
 
   // ── Icon library: build page first so ICON_CACHE is ready for all builders ─
   ICON_CACHE      = {};
@@ -2511,7 +2511,7 @@ figma.ui.onmessage = async function(msg) {
       var opacityCount = opts.opacityVariants && opts.opacityVariants.length > 0
         ? ACTIVE_COLORS.length * 11 * opts.opacityVariants.length : 0;
       sendProgress('Creating color primitives… (' + (colorCount + opacityCount) + ' variables)', 5);
-      var primResult = createPrimitivesCollection(opts.selectedColors, opts.opacityVariants);
+      var primResult = await createPrimitivesCollection(opts.selectedColors, opts.opacityVariants);
 
       // Update SEMANTIC_TOKENS global so component collection can use it
       var roles = opts.semanticRoles || DEFAULT_ROLES;
@@ -2522,7 +2522,7 @@ figma.ui.onmessage = async function(msg) {
         : getSemanticTokens(roles);
 
       sendProgress('Creating sizing tokens…', 20);
-      createSizingCollection({
+      await createSizingCollection({
         includeRadius:      opts.includeRadius,
         includeSpacing:     opts.includeSpacing,
         includeFontSizes:   opts.includeFontSizes,
@@ -2531,17 +2531,17 @@ figma.ui.onmessage = async function(msg) {
       });
 
       var themeResult = { variableMap: {} };
-      removeExistingCollection('Themes');
-      removeExistingCollection('Ale/Themes');
-      removeExistingCollection('shadcn / Components'); // clean up from previous runs
+      await removeExistingCollection('Themes');
+      await removeExistingCollection('Ale/Themes');
+      await removeExistingCollection('shadcn / Components'); // clean up from previous runs
       if (opts.includeSemanticTokens !== false) {
         sendProgress('Creating semantic themes (Light + Dark)…', 35);
-        themeResult = createThemeCollection(primResult.variableMap, roles, tokenStructure);
+        themeResult = await createThemeCollection(primResult.variableMap, roles, tokenStructure);
       }
 
       if (opts.components && opts.components.length > 0 && tokenStructure === 'classic' && opts.includeSemanticTokens !== false) {
         sendProgress('Creating component token variables…', 60);
-        createComponentCollection(opts.components, themeResult.variableMap, primResult.variableMap);
+        await createComponentCollection(opts.components, themeResult.variableMap, primResult.variableMap);
       }
 
       // Shadows & text styles
@@ -2608,7 +2608,7 @@ figma.ui.onmessage = async function(msg) {
   if (msg.type === 'clear-file') {
     try {
       // Remove all variable collections
-      figma.variables.getLocalVariableCollections().forEach(function(col) { col.remove(); });
+      (await figma.variables.getLocalVariableCollectionsAsync()).forEach(function(col) { col.remove(); });
       // Remove all styles
       (await figma.getLocalPaintStylesAsync()).forEach(function(s) { s.remove(); });
       (await figma.getLocalEffectStylesAsync()).forEach(function(s) { s.remove(); });
