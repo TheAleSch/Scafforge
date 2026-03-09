@@ -31,6 +31,7 @@ Built with Tailwind 4 as the foundation, with more complex components composed w
 - **11 font families** — Inter, Geist, Roboto, DM Sans, Plus Jakarta Sans, Manrope, Nunito, Outfit, Poppins, Work Sans, IBM Plex Sans
 - **Foundation toggles** — Radius, Spacing, Font Sizes, Border Width, Opacity
 - **Figma styles** — Shadow effect styles (sm–2xl + inner) and Text styles (xs–9xl)
+- **Opacity variants** — Figma doesn't allow combining a color variable with an opacity variable in a single fill. Scafforge works around this by automatically generating pre-composed color+opacity variables (e.g. `blue-500/50`) so you get true opacity tokens that stay linked to their base color and just work.
 
 ## Ale Style Tokens (Beta)
 
