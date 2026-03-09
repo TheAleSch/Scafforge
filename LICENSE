@@ -22,6 +22,33 @@ from the copyright holder:
    (or any substantial portion of it) on the Figma Community, any plugin
    marketplace, package registry, or any other distribution platform.
 
+---
+
+Third-Party Notices
+
+This software incorporates color palette data from Tailwind CSS and token
+naming conventions inspired by shadcn/ui. These projects are licensed under
+the MIT License. Their inclusion does not alter the license terms of this
+software, but their original copyright notices are reproduced below as
+required by the MIT License.
+
+Tailwind CSS
+Copyright (c) Tailwind Labs, Inc.
+https://github.com/tailwindlabs/tailwindcss/blob/main/LICENSE
+
+shadcn/ui
+Copyright (c) shadcn
+https://github.com/shadcn-ui/ui/blob/main/LICENSE.md
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of the above software, to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, subject to the
+above copyright notice and this permission notice being included in all
+copies or substantial portions of the Software.
+
+---
+
 THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
