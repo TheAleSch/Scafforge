@@ -23,7 +23,12 @@ var TW_COLORS = {
   purple:  { 50:'#faf5ff',100:'#f3e8ff',200:'#e9d5ff',300:'#d8b4fe',400:'#c084fc',500:'#a855f7',600:'#9333ea',700:'#7e22ce',800:'#6b21a8',900:'#581c87',950:'#3b0764' },
   fuchsia: { 50:'#fdf4ff',100:'#fae8ff',200:'#f5d0fe',300:'#f0abfc',400:'#e879f9',500:'#d946ef',600:'#c026d3',700:'#a21caf',800:'#86198f',900:'#701a75',950:'#4a044e' },
   pink:    { 50:'#fdf2f8',100:'#fce7f3',200:'#fbcfe8',300:'#f9a8d4',400:'#f472b6',500:'#ec4899',600:'#db2777',700:'#be185d',800:'#9d174d',900:'#831843',950:'#500724' },
-  rose:    { 50:'#fff1f2',100:'#ffe4e6',200:'#fecdd3',300:'#fda4af',400:'#fb7185',500:'#f43f5e',600:'#e11d48',700:'#be123c',800:'#9f1239',900:'#881337',950:'#4c0519' }
+  rose:    { 50:'#fff1f2',100:'#ffe4e6',200:'#fecdd3',300:'#fda4af',400:'#fb7185',500:'#f43f5e',600:'#e11d48',700:'#be123c',800:'#9f1239',900:'#881337',950:'#4c0519' },
+  // Tailwind v4.2 additions — stored as OKLCH, converted to sRGB at runtime
+  mauve:   { 50:'oklch(98.5% 0 0)',100:'oklch(96% 0.003 325.6)',200:'oklch(92.2% 0.005 325.62)',300:'oklch(86.5% 0.012 325.68)',400:'oklch(71.1% 0.019 323.02)',500:'oklch(54.2% 0.034 322.5)',600:'oklch(43.5% 0.029 321.78)',700:'oklch(36.4% 0.029 323.89)',800:'oklch(26.3% 0.024 320.12)',900:'oklch(21.2% 0.019 322.12)',950:'oklch(14.5% 0.008 326)' },
+  olive:   { 50:'oklch(98.8% 0.003 106.5)',100:'oklch(96.6% 0.005 106.5)',200:'oklch(93% 0.007 106.5)',300:'oklch(88% 0.011 106.6)',400:'oklch(73.7% 0.021 106.9)',500:'oklch(58% 0.031 107.3)',600:'oklch(46.6% 0.025 107.3)',700:'oklch(39.4% 0.023 107.4)',800:'oklch(28.6% 0.016 107.4)',900:'oklch(22.8% 0.013 107.4)',950:'oklch(15.3% 0.006 107.1)' },
+  mist:    { 50:'oklch(98.7% 0.002 197.1)',100:'oklch(96.3% 0.002 197.1)',200:'oklch(92.5% 0.005 214.3)',300:'oklch(87.2% 0.007 219.6)',400:'oklch(72.3% 0.014 214.4)',500:'oklch(56% 0.021 213.5)',600:'oklch(45% 0.017 213.2)',700:'oklch(37.8% 0.015 216)',800:'oklch(27.5% 0.011 216.9)',900:'oklch(21.8% 0.008 223.9)',950:'oklch(14.8% 0.004 228.8)' },
+  taupe:   { 50:'oklch(98.6% 0.002 67.8)',100:'oklch(96% 0.002 17.2)',200:'oklch(92.2% 0.005 34.3)',300:'oklch(86.8% 0.007 39.5)',400:'oklch(71.4% 0.014 41.2)',500:'oklch(54.7% 0.021 43.1)',600:'oklch(43.8% 0.017 39.3)',700:'oklch(36.7% 0.016 35.7)',800:'oklch(26.8% 0.011 36.5)',900:'oklch(21.4% 0.009 43.1)',950:'oklch(14.7% 0.004 49.3)' }
 };
 
 // ─── Semantic Tokens (role-based) ─────────────────────────────────────────────
@@ -421,7 +426,39 @@ function buildIconPage(page, libraryName, icons) {
 
 
 // ─── Color helpers ────────────────────────────────────────────────────────────
+
+// Converts "oklch(L% C H)" to a Figma-compatible sRGB {r,g,b,a} object (values 0–1).
+// Conversion path: OKLCH → OKLab → linear sRGB → gamma-corrected sRGB.
+function oklchToRgba(str, alpha) {
+  if (alpha === undefined) alpha = 1;
+  var m = str.match(/oklch\(\s*([\d.]+)%?\s+([\d.]+)\s+([\d.]+)/);
+  if (!m) return { r:0, g:0, b:0, a:alpha };
+  var L = parseFloat(m[1]) / 100;
+  var C = parseFloat(m[2]);
+  var H = parseFloat(m[3]) * Math.PI / 180;
+  // OKLCH → OKLab
+  var a = C * Math.cos(H);
+  var b = C * Math.sin(H);
+  // OKLab → linear sRGB
+  var l_ = L + 0.3963377774 * a + 0.2158037573 * b;
+  var m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+  var s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+  var l3 = l_ * l_ * l_;
+  var m3 = m_ * m_ * m_;
+  var s3 = s_ * s_ * s_;
+  var R = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
+  var G = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
+  var B = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
+  // linear sRGB → sRGB gamma (clamp to handle out-of-gamut)
+  function g(x) {
+    x = Math.max(0, Math.min(1, x));
+    return x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
+  }
+  return { r: g(R), g: g(G), b: g(B), a: alpha };
+}
+
 function hexToRgba(hex, alpha) {
+  if (typeof hex === 'string' && hex.startsWith('oklch')) return oklchToRgba(hex, alpha);
   if (alpha === undefined) alpha = 1;
   return {
     r: parseInt(hex.slice(1,3),16)/255,
@@ -699,6 +736,9 @@ function fontName(style) {
 
 // rgb() for fills/strokes — returns {r,g,b} only (no 'a'; alpha handled via paint.opacity)
 function rgb(hex) {
+  if (typeof hex === 'string' && hex.startsWith('oklch')) {
+    var c = oklchToRgba(hex); return { r: c.r, g: c.g, b: c.b };
+  }
   return {
     r: parseInt(hex.slice(1,3),16)/255,
     g: parseInt(hex.slice(3,5),16)/255,
