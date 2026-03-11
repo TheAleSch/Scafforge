@@ -131,14 +131,22 @@ function getImprovedSemanticTokens(roles) {
     'bg/info-1':          { light:i+'-100',   dark: i+'-900' },
     'bg/positive-1':      { light:s+'-100',   dark: s+'-900' },
 
+    // ── bg/neutral-4 (idle form controls) ──
+    'bg/neutral-4':           { light:n+'-300',   dark: n+'-600' },
+
     // ── hover/ ──
-    'bg/highlight-hover': { light:p+'-700',   dark: p+'-300' },
-    'bg/neutral-3-hover': { light:n+'-200',   dark: n+'-700' },
-    'bg/destructive-1-hover': { light:d+'-600', dark: d+'-800' },
+    'bg/highlight-hover':     { light:p+'-700',   dark: p+'-300' },
+    'bg/neutral-3-hover':     { light:n+'-200',   dark: n+'-700' },
+    'bg/neutral-4-hover':     { light:n+'-400',   dark: n+'-500' },
+    'bg/neutral-hover':       { light:n+'-100',   dark: n+'-800' },
+    'bg/neutral-2-hover':     { light:n+'-100',   dark: n+'-700' },
+    'bg/highlight-2-hover':   { light:p+'-200',   dark: p+'-800' },
+    'bg/destructive-1-hover': { light:d+'-600',   dark: d+'-800' },
 
     // ── border/ ──
     'border/highlight':   { light:p+'-300',   dark: p+'-700' },
     'border/highlight-2': { light:p+'-200',   dark: p+'-800' },
+    'border/focus':       { light:p+'-500',   dark: p+'-400' },
     'border/neutral':     { light:n+'-200',   dark: n+'-800' },
     'border/neutral-2':   { light:n+'-300',   dark: n+'-700' },
     'border/destructive': { light:d+'-300',   dark: d+'-700' },
@@ -171,10 +179,13 @@ var ALE_TOKEN_MAP = {
   'destructive':            'bg/destructive-1',
   'destructive-foreground': 'fg/over-primary',
   'destructive-hover':      'bg/destructive-1-hover',
+  'disabled':               'bg/neutral-3',
   'disabled-foreground':    'fg/neutral-4',
   'border':                 'border/neutral',
   'input':                  'border/neutral',
-  'ring':                   'border/highlight',
+  'ring':                   'border/focus',
+  'popover':                'bg/neutral',
+  'popover-foreground':     'fg/neutral-1',
 };
 var USE_ALE_MAP = false; // Set to true during generation in Ale mode
 
@@ -1620,8 +1631,9 @@ function buildFormFieldPage(page) {
 
 function buildInputPage(page) {
   var defs = [
-    { label:'Default',  bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'Placeholder text',   phColor:'#a1a1aa', bgTok:'background', brdTok:'input',    phTok:'muted-foreground', cBg:'input/background', cBrd:'input/border', cPh:'input/placeholder' },
-    { label:'Focus',    bg:'#ffffff', border:'#18181b', sw:2, ph:'Focused input',       phColor:'#a1a1aa', bgTok:'background', brdTok:'ring',      phTok:'muted-foreground', cBg:'input/background', cBrd:'input/ring', cPh:'input/placeholder' },
+    { label:'Default',  bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'Placeholder text',   phColor:'#a1a1aa', bgTok:'background', brdTok:'input',         phTok:'muted-foreground', cBg:'input/background', cBrd:'input/border', cPh:'input/placeholder' },
+    { label:'Hover',    bg:'#ffffff', border:'#d4d4d8', sw:1, ph:'Placeholder text',   phColor:'#a1a1aa', bgTok:'background', brdTok:'border/neutral-2', phTok:'muted-foreground', cBg:'input/background', cBrd:'input/border', cPh:'input/placeholder' },
+    { label:'Focus',    bg:'#ffffff', border:'#18181b', sw:2, ph:'Focused input',       phColor:'#a1a1aa', bgTok:'background', brdTok:'ring',          phTok:'muted-foreground', cBg:'input/background', cBrd:'input/ring', cPh:'input/placeholder' },
     { label:'Filled',   bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'user@example.com',   phColor:'#18181b', bgTok:'background', brdTok:'input',    phTok:'foreground',        cBg:'input/background', cBrd:'input/border', cPh:'input/text' },
     { label:'Error',    bg:'#ffffff', border:'#ef4444', sw:1, ph:'invalid@',            phColor:'#18181b', bgTok:'background', brdTok:'destructive',     phTok:'foreground',        cBg:'input/background', cBrd:'input/error-border', cPh:'input/text' },
     { label:'Disabled', bg:'#f4f4f5', border:'#e4e4e7', sw:1, ph:'Disabled input',     phColor:'#a1a1aa', bgTok:'muted', brdTok:'input', phTok:'disabled-foreground', opacity:0.6, cBg:'input/disabled-background', cBrd:'input/border', cPh:'input/disabled-text' },
@@ -1664,8 +1676,9 @@ function buildInputPage(page) {
 
 function buildTextareaPage(page) {
   var defs = [
-    { label:'Default',  bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'Write your message here...', bgTok:'background', brdTok:'input', phTok:'muted-foreground', cBg:'textarea/background', cBrd:'textarea/border', cPh:'textarea/placeholder' },
-    { label:'Focus',    bg:'#ffffff', border:'#18181b', sw:2, ph:'Write your message here...', bgTok:'background', brdTok:'input', phTok:'muted-foreground', cBg:'textarea/background', cBrd:'textarea/border', cPh:'textarea/placeholder' },
+    { label:'Default',  bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'Write your message here...', bgTok:'background', brdTok:'input',          phTok:'muted-foreground', cBg:'textarea/background', cBrd:'textarea/border', cPh:'textarea/placeholder' },
+    { label:'Hover',    bg:'#ffffff', border:'#d4d4d8', sw:1, ph:'Write your message here...', bgTok:'background', brdTok:'border/neutral-2', phTok:'muted-foreground', cBg:'textarea/background', cBrd:'textarea/border', cPh:'textarea/placeholder' },
+    { label:'Focus',    bg:'#ffffff', border:'#18181b', sw:2, ph:'Write your message here...', bgTok:'background', brdTok:'input',          phTok:'muted-foreground', cBg:'textarea/background', cBrd:'textarea/border', cPh:'textarea/placeholder' },
     { label:'Filled',   bg:'#ffffff', border:'#e4e4e7', sw:1, ph:'Hello, World!',              bgTok:'background', brdTok:'input', phTok:'foreground', cBg:'textarea/background', cBrd:'textarea/border', cPh:'textarea/text' },
     { label:'Disabled', bg:'#f4f4f5', border:'#e4e4e7', sw:1, ph:'Disabled textarea', opacity:0.6, bgTok:'muted', brdTok:'input', phTok:'muted-foreground', cBg:'textarea/disabled-background', cBrd:'textarea/border', cPh:'textarea/placeholder' },
   ];
@@ -1707,8 +1720,9 @@ function buildTextareaPage(page) {
 
 function buildSelectPage(page) {
   var defs = [
-    { label:'Closed',   text:'Select an option', textColor:'#a1a1aa', textTok:'muted-foreground', border:'#e4e4e7', brdTok:'input',  sw:1, cTxt:'select/placeholder', cBrd:'select/border' },
-    { label:'Open',     text:'Option 2',          textColor:'#18181b', textTok:'foreground',        border:'#18181b', brdTok:'ring',   sw:2, cTxt:'select/text',        cBrd:'select/ring' },
+    { label:'Closed',   text:'Select an option', textColor:'#a1a1aa', textTok:'muted-foreground', border:'#e4e4e7', brdTok:'input',          sw:1, cTxt:'select/placeholder', cBrd:'select/border' },
+    { label:'Hover',    text:'Select an option', textColor:'#a1a1aa', textTok:'muted-foreground', border:'#d4d4d8', brdTok:'border/neutral-2', sw:1, cTxt:'select/placeholder', cBrd:'select/border' },
+    { label:'Open',     text:'Option 2',          textColor:'#18181b', textTok:'foreground',        border:'#18181b', brdTok:'ring',           sw:2, cTxt:'select/text',        cBrd:'select/ring' },
     { label:'Disabled', text:'Select an option',  textColor:'#a1a1aa', textTok:'muted-foreground', border:'#e4e4e7', brdTok:'input',  sw:1, opacity:0.6, cTxt:'select/placeholder', cBrd:'select/border' },
   ];
   var allComps = [];
@@ -1752,10 +1766,12 @@ function buildSelectPage(page) {
 
 function buildSwitchPage(page) {
   var defs = [
-    { label:'Checked=Off, State=Default',  checked:false, disabled:false },
-    { label:'Checked=On, State=Default',   checked:true,  disabled:false },
-    { label:'Checked=Off, State=Disabled', checked:false, disabled:true  },
-    { label:'Checked=On, State=Disabled',  checked:true,  disabled:true  },
+    { label:'Checked=Off, State=Default',  checked:false, disabled:false, hover:false },
+    { label:'Checked=On, State=Default',   checked:true,  disabled:false, hover:false },
+    { label:'Checked=Off, State=Hover',    checked:false, disabled:false, hover:true  },
+    { label:'Checked=On, State=Hover',     checked:true,  disabled:false, hover:true  },
+    { label:'Checked=Off, State=Disabled', checked:false, disabled:true,  hover:false },
+    { label:'Checked=On, State=Disabled',  checked:true,  disabled:true,  hover:false },
   ];
   var allComps = [];
   defs.forEach(function(s) {
@@ -1770,7 +1786,17 @@ function buildSwitchPage(page) {
     comp.primaryAxisAlignItems = s.checked ? 'MAX' : 'MIN';
     comp.counterAxisAlignItems = 'CENTER';
     setPadding(comp, 3);
-    comp.fills = [cvp(s.checked ? 'switch/track-checked' : 'switch/track-unchecked', s.checked ? 'primary' : 'muted', s.checked ? '#18181b' : '#e4e4e7')];
+    var trackFill;
+    if (s.checked) {
+      trackFill = s.hover
+        ? cvp('switch/track-checked', 'bg/highlight-hover', '#3f3f46')
+        : cvp('switch/track-checked', 'primary', '#18181b');
+    } else {
+      trackFill = s.hover
+        ? cvp('switch/track-unchecked', 'bg/neutral-4-hover', '#a1a1aa')
+        : cvp('switch/track-unchecked', 'bg/neutral-4', '#d4d4d8');
+    }
+    comp.fills = [trackFill];
     if (s.disabled) comp.opacity = 0.4;
     var tSz = S.switchH - 6;
     var thumb = figma.createFrame();
@@ -1793,11 +1819,13 @@ function buildSwitchPage(page) {
 
 function buildCheckboxPage(page) {
   var defs = [
-    { label:'Checked=false, State=Default',           checked:false,  disabled:false },
-    { label:'Checked=true, State=Default',            checked:true,   disabled:false },
-    { label:'Checked=indeterminate, State=Default',   checked:'ind',  disabled:false },
-    { label:'Checked=false, State=Disabled',          checked:false,  disabled:true  },
-    { label:'Checked=true, State=Disabled',           checked:true,   disabled:true  },
+    { label:'Checked=false, State=Default',           checked:false,  disabled:false, hover:false },
+    { label:'Checked=true, State=Default',            checked:true,   disabled:false, hover:false },
+    { label:'Checked=indeterminate, State=Default',   checked:'ind',  disabled:false, hover:false },
+    { label:'Checked=false, State=Hover',             checked:false,  disabled:false, hover:true  },
+    { label:'Checked=true, State=Hover',              checked:true,   disabled:false, hover:true  },
+    { label:'Checked=false, State=Disabled',          checked:false,  disabled:true,  hover:false },
+    { label:'Checked=true, State=Disabled',           checked:true,   disabled:true,  hover:false },
   ];
   var allComps = [];
   defs.forEach(function(s) {
@@ -1811,12 +1839,18 @@ function buildCheckboxPage(page) {
     comp.counterAxisSizingMode = 'FIXED';
     comp.primaryAxisAlignItems = 'CENTER';
     comp.counterAxisAlignItems = 'CENTER';
-    comp.fills = s.checked === true
-      ? [cvp('checkbox/background-checked', 'primary', '#18181b')]
-      : [cvp('checkbox/background-default', 'background', '#ffffff')];
+    if (s.checked === true) {
+      comp.fills = [s.hover
+        ? cvp('checkbox/background-checked', 'bg/highlight-hover', '#3f3f46')
+        : cvp('checkbox/background-checked', 'primary', '#18181b')];
+    } else {
+      comp.fills = [s.hover
+        ? cvp('checkbox/background-default', 'bg/highlight-3', '#f4f4f5')
+        : cvp('checkbox/background-default', 'background', '#ffffff')];
+    }
     comp.strokes = s.checked
-      ? [cvp('checkbox/border', 'primary', '#18181b')]
-      : [cvp('checkbox/border', 'border', '#e4e4e7')];
+      ? [s.hover ? cvp('checkbox/border', 'bg/highlight-hover', '#3f3f46') : cvp('checkbox/border', 'primary', '#18181b')]
+      : [s.hover ? cvp('checkbox/border', 'border/highlight-2', '#e4e4e7') : cvp('checkbox/border', 'border', '#e4e4e7')];
     comp.strokeWeight = 1.5;
     comp.strokeAlign = 'INSIDE';
     if (s.disabled) comp.opacity = 0.4;
@@ -1844,10 +1878,12 @@ function buildCheckboxPage(page) {
 
 function buildRadioPage(page) {
   var defs = [
-    { label:'Checked=false, State=Default',  checked:false, disabled:false },
-    { label:'Checked=true, State=Default',   checked:true,  disabled:false },
-    { label:'Checked=false, State=Disabled', checked:false, disabled:true  },
-    { label:'Checked=true, State=Disabled',  checked:true,  disabled:true  },
+    { label:'Checked=false, State=Default',  checked:false, disabled:false, hover:false },
+    { label:'Checked=true, State=Default',   checked:true,  disabled:false, hover:false },
+    { label:'Checked=false, State=Hover',    checked:false, disabled:false, hover:true  },
+    { label:'Checked=true, State=Hover',     checked:true,  disabled:false, hover:true  },
+    { label:'Checked=false, State=Disabled', checked:false, disabled:true,  hover:false },
+    { label:'Checked=true, State=Disabled',  checked:true,  disabled:true,  hover:false },
   ];
   var allComps = [];
   defs.forEach(function(s) {
@@ -1863,8 +1899,8 @@ function buildRadioPage(page) {
     comp.counterAxisAlignItems = 'CENTER';
     comp.fills = [cvp('radio/background', 'background', '#ffffff')];
     comp.strokes = s.checked
-      ? [cvp('radio/border', 'primary', '#18181b')]
-      : [cvp('radio/border', 'border', '#e4e4e7')];
+      ? [s.hover ? cvp('radio/border', 'bg/highlight-hover', '#3f3f46') : cvp('radio/border', 'primary', '#18181b')]
+      : [s.hover ? cvp('radio/border', 'border/highlight-2', '#e4e4e7') : cvp('radio/border', 'border', '#e4e4e7')];
     comp.strokeWeight = 1.5;
     comp.strokeAlign = 'INSIDE';
     if (s.disabled) comp.opacity = 0.4;
@@ -1872,8 +1908,10 @@ function buildRadioPage(page) {
       var dot = figma.createFrame();
       dot.name = 'dot';
       dot.resize(8, 8);
-    setRadius(dot, 4);
-      dot.fills = [cvp('radio/indicator', 'primary', '#18181b')];
+      setRadius(dot, 4);
+      dot.fills = [s.hover
+        ? cvp('radio/indicator', 'bg/highlight-hover', '#3f3f46')
+        : cvp('radio/indicator', 'primary', '#18181b')];
       comp.appendChild(dot);
       dot.layoutSizingHorizontal = 'FIXED';
       dot.layoutSizingVertical = 'FIXED';
@@ -1890,9 +1928,10 @@ function buildRadioPage(page) {
 
 function buildSliderPage(page) {
   var defs = [
-    { label:'State=Default',  value:60, disabled:false },
-    { label:'State=Focus',    value:60, disabled:false },
-    { label:'State=Disabled', value:60, disabled:true  },
+    { label:'State=Default',  value:60, disabled:false, hover:false },
+    { label:'State=Hover',    value:60, disabled:false, hover:true  },
+    { label:'State=Focus',    value:60, disabled:false, hover:false },
+    { label:'State=Disabled', value:60, disabled:true,  hover:false },
   ];
   var allComps = [];
   defs.forEach(function(s) {
@@ -1921,7 +1960,9 @@ function buildSliderPage(page) {
     thumb.resize(20, 20);
     setRadius(thumb, 10);
     thumb.fills = [cvp('slider/thumb', 'background', '#ffffff')];
-    thumb.strokes = [cvp('slider/thumb-border', 'primary', '#18181b')];
+    thumb.strokes = [s.hover
+      ? cvp('slider/thumb-border', 'bg/highlight-hover', '#3f3f46')
+      : cvp('slider/thumb-border', 'primary', '#18181b')];
     thumb.strokeWeight = 2;
     thumb.strokeAlign = 'INSIDE';
     thumb.x = Math.round(240 * s.value / 100) - 10;
@@ -2586,6 +2627,14 @@ async function buildCanvasComponents(selectedComponents, options, fontFamily) {
 figma.ui.onmessage = async function(msg) {
   if (msg.type === 'generate') {
     var opts = msg.options;
+    // Inject custom color scales for this run
+    var injectedColorKeys = [];
+    if (opts.customColors && typeof opts.customColors === 'object') {
+      Object.keys(opts.customColors).forEach(function(k) {
+        TW_COLORS[k] = opts.customColors[k];
+        injectedColorKeys.push(k);
+      });
+    }
     try {
       ACTIVE_COLORS = opts.selectedColors || Object.keys(TW_COLORS);
       var colorCount = ACTIVE_COLORS.length * 11 + 2;
@@ -2678,6 +2727,9 @@ figma.ui.onmessage = async function(msg) {
       figma.ui.postMessage({ type:'done' });
     } catch (err) {
       figma.ui.postMessage({ type:'error', message: err.message || String(err) });
+    } finally {
+      // Remove injected custom scales so TW_COLORS stays clean between runs
+      injectedColorKeys.forEach(function(k) { delete TW_COLORS[k]; });
     }
   }
   if (msg.type === 'resize') {
