@@ -832,6 +832,7 @@ function sectionLabel(parent, text, x, y) {
 // ── Variable cache & paint binder ─────────────────────────────────────────────
 var VAR_CACHE = null;
 var FLOAT_CACHE = null;
+var EFFECT_STYLE_CACHE = {};
 
 async function buildVarCache() {
   VAR_CACHE = {};
@@ -841,6 +842,10 @@ async function buildVarCache() {
   FLOAT_CACHE = {};
   (await figma.variables.getLocalVariablesAsync('FLOAT')).forEach(function(v) {
     FLOAT_CACHE[v.name] = v;
+  });
+  EFFECT_STYLE_CACHE = {};
+  (await figma.getLocalEffectStylesAsync()).forEach(function(s) {
+    EFFECT_STYLE_CACHE[s.name] = s;
   });
 }
 
@@ -1253,6 +1258,7 @@ function buildButtonPage(page) {
         } else {
           var t = figma.createText();
           t.characters = v.label;
+          t.name = 'label';
           t.fontSize = sz.fz;
           t.fontName = fontName('Medium');
           t.fills = [fgPaint];
@@ -1287,6 +1293,7 @@ var SELECT_COMP_CACHE   = {};
 var SWITCH_COMP_CACHE   = {};
 var CHECKBOX_COMP_CACHE = {};
 var RADIO_COMP_CACHE    = {};
+var FORMFIELD_COMP_CACHE = {};
 
 // Find a button component by variant label, size label, state
 function getButtonComp(variantLabel, sizeLabel, state) {
@@ -1331,6 +1338,7 @@ function buildButtonGroupPage(page) {
         groupComp.appendChild(node);
       } else {
         var fb = figma.createFrame();
+        fb.name = 'button-fallback';
         fb.resize(w, S.btnH);
         fb.fills = [solidPaint('#18181b')];
         node = fb;
@@ -1385,6 +1393,7 @@ function buildLabelPage(page) {
 
     var t = figma.createText();
     t.characters = d.text;
+    t.name = 'label';
     t.fontSize = S.fontSize;
     t.fontName = fontName('Medium');
     t.fills = [cvp(d.textTok === 'foreground' ? 'label/foreground' : 'label/muted', d.textTok, '#18181b')];
@@ -1395,6 +1404,7 @@ function buildLabelPage(page) {
     if (d.suffix) {
       var s = figma.createText();
       s.characters = d.suffix;
+      s.name = 'suffix';
       s.fontSize = S.fontSize;
       s.fontName = d.label === 'Required' ? fontName('Medium') : fontName('Regular');
       s.fills = [d.label === 'Required'
@@ -1437,6 +1447,7 @@ function buildFormFieldPage(page) {
     // Fallback: plain text
     var t = figma.createText();
     t.characters = labelText;
+    t.name = 'label';
     t.fontSize = S.fontSize;
     t.fontName = fontName('Medium');
     t.fills = [vp(labelState === 'Disabled' ? 'muted-foreground' : 'foreground', '#18181b')];
@@ -1447,10 +1458,11 @@ function buildFormFieldPage(page) {
   function makeStacked(name, labelText, labelState, ctrlComp, helperText, isError) {
     var comp = figma.createComponent();
     comp.name = name;
+    comp.resize(S.inputW, comp.height);
     comp.fills = [];
     comp.layoutMode = 'VERTICAL';
     comp.primaryAxisSizingMode = 'AUTO';
-    comp.counterAxisSizingMode = 'AUTO';
+    comp.counterAxisSizingMode = 'FIXED';
     setGap(comp, LBL_GAP);
     setPadding(comp, 0);
 
@@ -1464,13 +1476,14 @@ function buildFormFieldPage(page) {
     if (ctrlComp) {
       var ctrlInst = ctrlComp.createInstance();
       comp.appendChild(ctrlInst);
-      ctrlInst.layoutSizingHorizontal = 'FIXED';
+      ctrlInst.layoutSizingHorizontal = 'FILL';
       ctrlInst.layoutSizingVertical = 'FIXED';
     }
 
     // Helper text
     var hlp = figma.createText();
     hlp.characters = helperText;
+    hlp.name = 'helper';
     hlp.fontSize = helperFz;
     hlp.fontName = fontName('Regular');
     hlp.fills = [vp(isError ? 'destructive' : 'muted-foreground', isError ? '#ef4444' : '#a1a1aa')];
@@ -1512,6 +1525,7 @@ function buildFormFieldPage(page) {
 
     var lbl = figma.createText();
     lbl.characters = labelText;
+    lbl.name = 'label';
     lbl.fontSize = S.fontSize;
     lbl.fontName = fontName('Medium');
     lbl.fills = [vp(disabled ? 'muted-foreground' : 'foreground', disabled ? '#a1a1aa' : '#18181b')];
@@ -1521,6 +1535,7 @@ function buildFormFieldPage(page) {
 
     var desc = figma.createText();
     desc.characters = descText;
+    desc.name = 'description';
     desc.fontSize = helperFz;
     desc.fontName = fontName('Regular');
     desc.fills = [vp('muted-foreground', '#a1a1aa')];
@@ -1626,6 +1641,11 @@ function buildFormFieldPage(page) {
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Form Field';
   layoutSet(set, 24);
+
+  // Populate cache so downstream builders (e.g. dialog) can instantiate Form Field
+  FORMFIELD_COMP_CACHE = {};
+  allComps.forEach(function(c) { FORMFIELD_COMP_CACHE[c.name] = c; });
+
   return set;
 }
 
@@ -1658,6 +1678,7 @@ function buildInputPage(page) {
     if (s.opacity) comp.opacity = s.opacity;
     var ph = figma.createText();
     ph.characters = s.ph;
+    ph.name = 'content';
     ph.fontSize = S.fontSize;
     ph.fontName = fontName('Regular');
     ph.fills = [cvp(s.cPh, s.phTok, s.phColor)];
@@ -1702,6 +1723,7 @@ function buildTextareaPage(page) {
     if (s.opacity) comp.opacity = s.opacity;
     var ph = figma.createText();
     ph.characters = s.ph;
+    ph.name = 'content';
     ph.fontSize = S.fontSize;
     ph.fontName = fontName('Regular');
     ph.fills = [cvp(s.cPh, s.phTok, s.label === 'Filled' ? '#18181b' : '#a1a1aa')];
@@ -1747,6 +1769,7 @@ function buildSelectPage(page) {
     if (s.opacity) comp.opacity = s.opacity;
     var t = figma.createText();
     t.characters = s.text;
+    t.name = 'content';
     t.fontSize = S.fontSize;
     t.fontName = fontName('Regular');
     t.fills = [cvp(s.cTxt, s.textTok, s.textColor)];
@@ -2005,6 +2028,7 @@ function buildBadgePage(page) {
     }
     var t = figma.createText();
     t.characters = v.label;
+    t.name = 'label';
     t.fontSize = Math.max(S.fontSize - 2, 10);
     t.fontName = fontName('Medium');
     t.fills = [cvp(v.cFg, v.fgTok, v.fg)];
@@ -2019,13 +2043,14 @@ function buildBadgePage(page) {
   return set;
 }
 
-function buildCardPage(page) {
+async function buildCardPage(page) {
   var variants = [
     { label:'Variant=Light', bg:'#ffffff', title:'#18181b', desc:'#71717a', border:'#e4e4e7', btnBg:'#18181b', btnFg:{r:1,g:1,b:1},     bgTok:'card', fgTok:'card-foreground', brdTok:'border', cBg:'card/background', cFg:'card/foreground', cBrd:'card/border' },
     { label:'Variant=Dark',  bg:'#18181b', title:'#ffffff', desc:'#71717a', border:'#27272a', btnBg:'#f4f4f5', btnFg:{r:0.1,g:0.1,b:0.1}, bgTok:'card', fgTok:'card-foreground', brdTok:'border', cBg:'card/background', cFg:'card/foreground', cBrd:'card/border' },
   ];
   var allComps = [];
-  variants.forEach(function(v) {
+  for (var vi = 0; vi < variants.length; vi++) {
+    var v = variants[vi];
     var comp = figma.createComponent();
     comp.name = v.label;
     comp.resize(320, 200);
@@ -2042,7 +2067,12 @@ function buildCardPage(page) {
     comp.strokes = [cvp(v.cBrd, v.brdTok, v.border)];
     comp.strokeWeight = 1;
     comp.strokeAlign = 'INSIDE';
-    comp.effects = [{ type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.06}, offset:{x:0,y:2}, radius:8, spread:0, visible:true, blendMode:'NORMAL' }];
+    var cardShadow = EFFECT_STYLE_CACHE['shadow/sm'];
+    if (cardShadow) {
+      await comp.setEffectStyleIdAsync(cardShadow.id);
+    } else {
+      comp.effects = [{ type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.06}, offset:{x:0,y:2}, radius:8, spread:0, visible:true, blendMode:'NORMAL' }];
+    }
 
     // Header area
     var header = figma.createFrame();
@@ -2056,6 +2086,7 @@ function buildCardPage(page) {
 
     var ct = figma.createText();
     ct.characters = 'Card Title';
+    ct.name = 'title';
     setFontSize(ct, 16);
     ct.fontName = fontName('Semi Bold');
     ct.fills = [cvp(v.cFg, v.fgTok, v.title)];
@@ -2064,6 +2095,7 @@ function buildCardPage(page) {
     ct.layoutSizingVertical = 'HUG';
     var cd = figma.createText();
     cd.characters = 'Card description goes here.';
+    cd.name = 'description';
     setFontSize(cd, 13);
     cd.fontName = fontName('Regular');
     cd.fills = [solidPaint(v.desc)];
@@ -2107,6 +2139,7 @@ function buildCardPage(page) {
     footer.appendChild(btn);
     var ft = figma.createText();
     ft.characters = 'Action';
+    ft.name = 'label';
     setFontSize(ft, 12);
     ft.fontName = fontName('Medium');
     ft.fills = [{ type:'SOLID', color:v.btnFg }];
@@ -2114,7 +2147,7 @@ function buildCardPage(page) {
     ft.layoutSizingHorizontal = 'HUG';
     ft.layoutSizingVertical = 'HUG';
     allComps.push(comp);
-  });
+  }
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Card';
   layoutSet(set);
@@ -2164,6 +2197,7 @@ function buildAlertPage(page) {
 
     var aTitle = figma.createText();
     aTitle.characters = v.title;
+    aTitle.name = 'title';
     aTitle.fontSize = S.fontSize + 1;
     aTitle.fontName = fontName('Semi Bold');
     aTitle.fills = [cvp(v.cTtl, v.ttlTok, v.titleColor)];
@@ -2172,6 +2206,7 @@ function buildAlertPage(page) {
     aTitle.layoutSizingVertical = 'HUG';
     var aDesc = figma.createText();
     aDesc.characters = v.desc;
+    aDesc.name = 'description';
     setFontSize(aDesc, 13);
     aDesc.fontName = fontName('Regular');
     aDesc.fills = [cvp(v.cDsc, v.dscTok, v.descColor)];
@@ -2189,13 +2224,14 @@ function buildAlertPage(page) {
   return set;
 }
 
-function buildToastPage(page) {
+async function buildToastPage(page) {
   var variants = [
     { label:'Variant=Default',     bg:'#ffffff', border:'#e4e4e7', title:'Scheduled: Catch up',         desc:'Friday, Feb 10, 2023 at 5:57 PM',     bgTok:'background',             brdTok:'border', iconSemantic:'success', iconColor:'#18181b', cBg:'toast/background', cBrd:'toast/border' },
     { label:'Variant=Destructive', bg:'#ffffff', border:'#ef4444', title:'Error: Something went wrong',  desc:'Please try again or contact support.', bgTok:'background', brdTok:'border', iconSemantic:'error',   iconColor:'#ef4444', cBg:'toast/destructive/background', cBrd:'toast/border' },
   ];
   var allComps = [];
-  variants.forEach(function(v) {
+  for (var vi = 0; vi < variants.length; vi++) {
+    var v = variants[vi];
     var comp = figma.createComponent();
     comp.name = v.label;
     comp.resize(340, 64);
@@ -2212,7 +2248,12 @@ function buildToastPage(page) {
     comp.strokes = [cvp(v.cBrd, v.brdTok, v.border)];
     comp.strokeWeight = 1;
     comp.strokeAlign = 'INSIDE';
-    comp.effects = [{ type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.12}, offset:{x:0,y:4}, radius:16, spread:0, visible:true, blendMode:'NORMAL' }];
+    var toastShadow = EFFECT_STYLE_CACHE['shadow/md'];
+    if (toastShadow) {
+      await comp.setEffectStyleIdAsync(toastShadow.id);
+    } else {
+      comp.effects = [{ type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.12}, offset:{x:0,y:4}, radius:16, spread:0, visible:true, blendMode:'NORMAL' }];
+    }
 
     var iconInst = getIcon(v.iconSemantic);
     if (iconInst) {
@@ -2233,6 +2274,7 @@ function buildToastPage(page) {
 
     var ttitle = figma.createText();
     ttitle.characters = v.title;
+    ttitle.name = 'title';
     setFontSize(ttitle, 13);
     ttitle.fontName = fontName('Semi Bold');
     ttitle.fills = [cvp('toast/foreground', 'foreground', '#18181b')];
@@ -2241,6 +2283,7 @@ function buildToastPage(page) {
     ttitle.layoutSizingVertical = 'HUG';
     var tdesc = figma.createText();
     tdesc.characters = v.desc;
+    tdesc.name = 'description';
     setFontSize(tdesc, 12);
     tdesc.fontName = fontName('Regular');
     tdesc.fills = [solidPaint('#71717a')];
@@ -2266,6 +2309,7 @@ function buildToastPage(page) {
     btn.layoutSizingVertical = 'FIXED';
     var tu = figma.createText();
     tu.characters = 'Undo';
+    tu.name = 'label';
     setFontSize(tu, 12);
     tu.fontName = fontName('Medium');
     tu.fills = [cvp('toast/action-foreground', 'secondary-foreground', '#18181b')];
@@ -2273,137 +2317,361 @@ function buildToastPage(page) {
     tu.layoutSizingHorizontal = 'HUG';
     tu.layoutSizingVertical = 'HUG';
     allComps.push(comp);
-  });
+  }
   var set = figma.combineAsVariants(allComps, page);
   set.name = 'Toast';
   layoutSet(set);
   return set;
 }
 
-function buildDialogPage(page) {
-  var comp = figma.createComponent();
-  comp.name = 'Variant=Default';
-  comp.resize(480, 260);
-  setRadius(comp, S.cardR);
-  comp.clipsContent = true;
-  comp.layoutMode = 'VERTICAL';
-  comp.primaryAxisSizingMode = 'FIXED';
-  comp.counterAxisSizingMode = 'FIXED';
-  comp.primaryAxisAlignItems = 'MIN';
-  comp.counterAxisAlignItems = 'MIN';
-  setPadding(comp, 24);
-  setGap(comp, 16);
-  comp.fills = [cvp('dialog/background', 'background', '#ffffff')];
-  comp.strokes = [cvp('dialog/border', 'border', '#e4e4e7')];
-  comp.strokeWeight = 1;
-  comp.strokeAlign = 'INSIDE';
-  comp.effects = [{ type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.2}, offset:{x:0,y:8}, radius:40, spread:0, visible:true, blendMode:'NORMAL' }];
+async function buildDialogPage(page) {
+  // ── DialogHeader sub-component ──────────────────────────────────────────────
+  var headerComp = figma.createComponent();
+  headerComp.name = 'DialogHeader';
+  headerComp.fills = [];
+  headerComp.layoutMode = 'VERTICAL';
+  headerComp.primaryAxisSizingMode = 'AUTO';
+  headerComp.counterAxisSizingMode = 'AUTO';
+  setGap(headerComp, 8);
+  setPadding(headerComp, 0);
+
+  // Title row: title text + close button
+  var titleRow = figma.createFrame();
+  titleRow.name = 'title-row';
+  titleRow.fills = [];
+  titleRow.layoutMode = 'HORIZONTAL';
+  titleRow.primaryAxisSizingMode = 'AUTO';
+  titleRow.counterAxisSizingMode = 'AUTO';
+  titleRow.primaryAxisAlignItems = 'MAX';
+  titleRow.counterAxisAlignItems = 'MIN';
+  setPadding(titleRow, 0);
+  headerComp.appendChild(titleRow);
+  titleRow.layoutSizingHorizontal = 'FILL';
+  titleRow.layoutSizingVertical = 'HUG';
 
   var dtitle = figma.createText();
-  dtitle.characters = 'Edit Profile';
+  dtitle.characters = 'Edit profile';
+  dtitle.name = 'title';
   setFontSize(dtitle, 18);
   dtitle.fontName = fontName('Semi Bold');
   dtitle.fills = [cvp('dialog/foreground', 'foreground', '#18181b')];
-  comp.appendChild(dtitle);
-  dtitle.layoutSizingHorizontal = 'HUG';
+  titleRow.appendChild(dtitle);
+  dtitle.layoutSizingHorizontal = 'FILL';
   dtitle.layoutSizingVertical = 'HUG';
 
+  // Close button — Ghost icon-sm button with 'close' icon
+  var closeBtnSrc = getButtonComp('Ghost', 'icon-sm', 'Default');
+  if (closeBtnSrc) {
+    var closeBtnInst = closeBtnSrc.createInstance();
+    closeBtnInst.name = 'close-btn';
+    // Swap the default plus icon to the close icon via swapComponent
+    var closeIconComp = null;
+    if (ACTIVE_ICON_LIB && ACTIVE_ICON_LIB !== 'none') {
+      var mapping = ICON_SEMANTIC['close'];
+      var iconName = mapping ? mapping[ACTIVE_ICON_LIB] : null;
+      if (iconName && ICON_CACHE[iconName]) closeIconComp = ICON_CACHE[iconName];
+    } else if (ACTIVE_ICON_LIB === 'none') {
+      closeIconComp = getOrCreateGenericIcon();
+    }
+    var existingIcon = closeBtnInst.findOne(function(n) { return n.type === 'INSTANCE'; });
+    if (existingIcon && closeIconComp) {
+      existingIcon.swapComponent(closeIconComp);
+    }
+    titleRow.appendChild(closeBtnInst);
+    closeBtnInst.layoutSizingHorizontal = 'FIXED';
+    closeBtnInst.layoutSizingVertical = 'FIXED';
+  } else {
+    // Fallback: plain frame with ✕ text when button component is unavailable
+    var closeBtn = figma.createFrame();
+    closeBtn.name = 'close-btn';
+    closeBtn.resize(24, 24);
+    closeBtn.layoutMode = 'HORIZONTAL';
+    closeBtn.primaryAxisSizingMode = 'FIXED';
+    closeBtn.counterAxisSizingMode = 'FIXED';
+    closeBtn.primaryAxisAlignItems = 'CENTER';
+    closeBtn.counterAxisAlignItems = 'CENTER';
+    closeBtn.fills = [];
+    titleRow.appendChild(closeBtn);
+    var xText = figma.createText();
+    xText.characters = '✕';
+    xText.name = 'icon';
+    setFontSize(xText, 16);
+    xText.fontName = fontName('Regular');
+    xText.fills = [cvp('dialog/foreground', 'foreground', '#18181b')];
+    closeBtn.appendChild(xText);
+    xText.layoutSizingHorizontal = 'HUG';
+    xText.layoutSizingVertical = 'HUG';
+  }
+
+  page.appendChild(headerComp);
+
+  // ── DialogFooter sub-component ──────────────────────────────────────────────
+  var footerComp = figma.createComponent();
+  footerComp.name = 'DialogFooter';
+  footerComp.fills = [];
+  footerComp.layoutMode = 'HORIZONTAL';
+  footerComp.primaryAxisSizingMode = 'AUTO';
+  footerComp.counterAxisSizingMode = 'AUTO';
+  footerComp.primaryAxisAlignItems = 'MAX';
+  footerComp.counterAxisAlignItems = 'CENTER';
+  setGap(footerComp, 8);
+  setPadding(footerComp, 0);
+
+  // Cancel button
+  var cancelSrc = getButtonComp('Outline', 'Default', 'Default');
+  if (cancelSrc) {
+    var cancel = cancelSrc.createInstance();
+    cancel.name = 'cancel-btn';
+    footerComp.appendChild(cancel);
+    cancel.layoutSizingHorizontal = 'FIXED';
+    cancel.layoutSizingVertical = 'FIXED';
+  } else {
+    var cancel = figma.createFrame();
+    cancel.name = 'cancel-btn';
+    cancel.resize(100, S.btnH);
+    setRadius(cancel, S.radius);
+    cancel.layoutMode = 'HORIZONTAL';
+    cancel.primaryAxisSizingMode = 'FIXED';
+    cancel.counterAxisSizingMode = 'FIXED';
+    cancel.primaryAxisAlignItems = 'CENTER';
+    cancel.counterAxisAlignItems = 'CENTER';
+    cancel.fills = [solidPaint('#ffffff')];
+    cancel.strokes = [vp('border', '#e4e4e7')];
+    cancel.strokeWeight = 1;
+    cancel.strokeAlign = 'INSIDE';
+    footerComp.appendChild(cancel);
+    var ct = figma.createText();
+    ct.characters = 'Cancel';
+    ct.name = 'label';
+    setFontSize(ct, S.fontSize);
+    ct.fontName = fontName('Medium');
+    ct.fills = [vp('foreground', '#18181b')];
+    cancel.appendChild(ct);
+    ct.layoutSizingHorizontal = 'HUG';
+    ct.layoutSizingVertical = 'HUG';
+  }
+
+  // Save button
+  var saveSrc = getButtonComp('Default', 'Default', 'Default');
+  if (saveSrc) {
+    var save = saveSrc.createInstance();
+    save.name = 'save-btn';
+    footerComp.appendChild(save);
+    save.layoutSizingHorizontal = 'FIXED';
+    save.layoutSizingVertical = 'FIXED';
+  } else {
+    var save = figma.createFrame();
+    save.name = 'save-btn';
+    save.resize(130, S.btnH);
+    setRadius(save, S.radius);
+    save.layoutMode = 'HORIZONTAL';
+    save.primaryAxisSizingMode = 'FIXED';
+    save.counterAxisSizingMode = 'FIXED';
+    save.primaryAxisAlignItems = 'CENTER';
+    save.counterAxisAlignItems = 'CENTER';
+    save.fills = [vp('primary', '#18181b')];
+    footerComp.appendChild(save);
+    var st = figma.createText();
+    st.characters = 'Save changes';
+    st.name = 'label';
+    setFontSize(st, S.fontSize);
+    st.fontName = fontName('Medium');
+    st.fills = [vp('primary-foreground', '#fafafa')];
+    save.appendChild(st);
+    st.layoutSizingHorizontal = 'HUG';
+    st.layoutSizingVertical = 'HUG';
+  }
+
+  page.appendChild(footerComp);
+
+  // ── Helper: create a form field row (label + input) ─────────────────────────
+  function makeField(parent, labelText, placeholder) {
+    // Prefer Form Field component instance when available
+    var ffSrc = FORMFIELD_COMP_CACHE['Type=Input, State=Default'];
+    if (ffSrc) {
+      var inst = ffSrc.createInstance();
+      parent.appendChild(inst);
+      inst.layoutSizingHorizontal = 'FILL';
+      inst.layoutSizingVertical = 'HUG';
+      // Override label text
+      var lbl = inst.findOne(function(n) { return n.type === 'TEXT' && n.name === 'label'; });
+      if (lbl) lbl.characters = labelText;
+      // Override input placeholder text (first text node inside the input instance)
+      var inputChild = inst.findOne(function(n) { return n.type === 'INSTANCE' && n.name && n.name.indexOf('State=') === 0; });
+      if (inputChild) {
+        var tn = inputChild.findOne(function(n) { return n.type === 'TEXT'; });
+        if (tn) tn.characters = placeholder;
+      }
+      return inst;
+    }
+
+    // Fallback: build inline field when Form Field is not available
+    var field = figma.createFrame();
+    field.name = 'field-' + labelText.toLowerCase();
+    field.fills = [];
+    field.layoutMode = 'VERTICAL';
+    field.primaryAxisSizingMode = 'AUTO';
+    field.counterAxisSizingMode = 'AUTO';
+    setGap(field, 6);
+    setPadding(field, 0);
+    parent.appendChild(field);
+    field.layoutSizingHorizontal = 'FILL';
+    field.layoutSizingVertical = 'HUG';
+
+    // Label
+    var lbl2 = figma.createText();
+    lbl2.characters = labelText;
+    lbl2.name = 'label';
+    setFontSize(lbl2, S.fontSize);
+    lbl2.fontName = fontName('Medium');
+    lbl2.fills = [cvp('dialog/foreground', 'foreground', '#18181b')];
+    field.appendChild(lbl2);
+    lbl2.layoutSizingHorizontal = 'HUG';
+    lbl2.layoutSizingVertical = 'HUG';
+
+    // Input — use Input component instance if available
+    var inputKey = 'State=Default';
+    var inputSrc = INPUT_COMP_CACHE[inputKey] || null;
+    if (inputSrc) {
+      var inputInst = inputSrc.createInstance();
+      field.appendChild(inputInst);
+      inputInst.layoutSizingHorizontal = 'FILL';
+      inputInst.layoutSizingVertical = 'FIXED';
+      var tn2 = inputInst.findOne(function(n) { return n.type === 'TEXT'; });
+      if (tn2) tn2.characters = placeholder;
+    } else {
+      var inp = figma.createFrame();
+      inp.name = 'input';
+      inp.resize(200, S.inputH);
+      setRadius(inp, S.radius);
+      inp.layoutMode = 'HORIZONTAL';
+      inp.primaryAxisSizingMode = 'FIXED';
+      inp.counterAxisSizingMode = 'FIXED';
+      inp.primaryAxisAlignItems = 'MIN';
+      inp.counterAxisAlignItems = 'CENTER';
+      setPaddingH(inp, 12);
+      inp.fills = [vp('background', '#ffffff')];
+      inp.strokes = [vp('border', '#e4e4e7')];
+      inp.strokeWeight = 1;
+      inp.strokeAlign = 'INSIDE';
+      field.appendChild(inp);
+      inp.layoutSizingHorizontal = 'FILL';
+      inp.layoutSizingVertical = 'FIXED';
+      var iph = figma.createText();
+      iph.characters = placeholder;
+      iph.name = 'content';
+      setFontSize(iph, S.fontSize);
+      iph.fontName = fontName('Regular');
+      iph.fills = [vp('foreground', '#18181b')];
+      inp.appendChild(iph);
+      iph.layoutSizingHorizontal = 'FILL';
+      iph.layoutSizingVertical = 'HUG';
+    }
+    return field;
+  }
+
+  // ── DialogBody sub-component (slot-ready) ─────────────────────────────────
+  var bodyComp = figma.createComponent();
+  bodyComp.name = '⊞ DialogBody';
+  bodyComp.resize(400, bodyComp.height);
+  bodyComp.fills = [];
+  bodyComp.layoutMode = 'VERTICAL';
+  bodyComp.primaryAxisSizingMode = 'AUTO';
+  bodyComp.counterAxisSizingMode = 'FIXED';
+  setGap(bodyComp, 16);
+  setPadding(bodyComp, 0);
+
+  // Description text
   var ddesc = figma.createText();
-  ddesc.characters = 'Make changes to your profile here.';
-  setFontSize(ddesc, 13);
+  ddesc.characters = "Make changes to your profile here. Click save when you're done.";
+  ddesc.name = 'description';
+  setFontSize(ddesc, S.fontSize);
   ddesc.fontName = fontName('Regular');
-  ddesc.fills = [solidPaint('#71717a')];
-  comp.appendChild(ddesc);
-  ddesc.layoutSizingHorizontal = 'HUG';
+  ddesc.fills = [vp('muted-foreground', '#71717a')];
+  bodyComp.appendChild(ddesc);
+  ddesc.layoutSizingHorizontal = 'FILL';
   ddesc.layoutSizingVertical = 'HUG';
 
-  var inp = figma.createFrame();
-  inp.name = 'field';
-  inp.resize(432, S.inputH);
-  setRadius(inp, S.radius);
-  inp.layoutMode = 'HORIZONTAL';
-  inp.primaryAxisSizingMode = 'FIXED';
-  inp.counterAxisSizingMode = 'FIXED';
-  inp.primaryAxisAlignItems = 'MIN';
-  inp.counterAxisAlignItems = 'CENTER';
-  setPaddingH(inp, 12);
-  inp.fills = [solidPaint('#ffffff')];
-  inp.strokes = [solidPaint('#e4e4e7')];
-  inp.strokeWeight = 1;
-  inp.strokeAlign = 'INSIDE';
-  comp.appendChild(inp);
-  inp.layoutSizingHorizontal = 'FILL';
-  inp.layoutSizingVertical = 'FIXED';
+  // Default body content — form fields as example
+  makeField(bodyComp, 'Name', 'Pedro Duarte');
+  makeField(bodyComp, 'Username', '@peduarte');
 
-  var iph = figma.createText();
-  iph.characters = 'Pedro Duarte';
-  setFontSize(iph, 13);
-  iph.fontName = fontName('Regular');
-  iph.fills = [solidPaint('#18181b')];
-  inp.appendChild(iph);
-  iph.layoutSizingHorizontal = 'FILL';
-  iph.layoutSizingVertical = 'HUG';
+  page.appendChild(bodyComp);
 
-  // Actions row
-  var actions = figma.createFrame();
-  actions.name = 'actions';
-  actions.fills = [];
-  actions.layoutMode = 'HORIZONTAL';
-  actions.primaryAxisSizingMode = 'AUTO';
-  actions.counterAxisSizingMode = 'AUTO';
-  actions.primaryAxisAlignItems = 'MAX';
-  actions.counterAxisAlignItems = 'CENTER';
-  setGap(actions, 8);
-  setPadding(actions, 0);
-  comp.appendChild(actions);
-  actions.layoutSizingHorizontal = 'FILL';
-  actions.layoutSizingVertical = 'HUG';
+  // ── Dialog size variants ────────────────────────────────────────────────────
+  var sizes = [
+    { key:'sm',      w:400,  pad:20 },
+    { key:'Default', w:512,  pad:24 },
+    { key:'lg',      w:640,  pad:32 },
+  ];
+  var allComps = [];
 
-  var cancel = figma.createFrame();
-  cancel.name = 'cancel-btn';
-  cancel.resize(90, S.btnH);
-  setRadius(cancel, S.radius);
-  cancel.layoutMode = 'HORIZONTAL';
-  cancel.primaryAxisSizingMode = 'FIXED';
-  cancel.counterAxisSizingMode = 'FIXED';
-  cancel.primaryAxisAlignItems = 'CENTER';
-  cancel.counterAxisAlignItems = 'CENTER';
-  cancel.fills = [solidPaint('#f4f4f5')];
-  actions.appendChild(cancel);
+  for (var si = 0; si < sizes.length; si++) {
+    var sz = sizes[si];
+    var dlg = figma.createComponent();
+    dlg.name = 'Size=' + sz.key;
+    dlg.resize(sz.w, 100);
+    setRadius(dlg, S.cardR);
+    dlg.clipsContent = true;
+    dlg.layoutMode = 'VERTICAL';
+    dlg.primaryAxisSizingMode = 'AUTO';
+    dlg.counterAxisSizingMode = 'FIXED';
+    dlg.primaryAxisAlignItems = 'MIN';
+    dlg.counterAxisAlignItems = 'MIN';
+    setPadding(dlg, sz.pad);
+    setGap(dlg, 20);
+    dlg.fills = [cvp('dialog/background', 'background', '#ffffff')];
+    dlg.strokes = [cvp('dialog/border', 'border', '#e4e4e7')];
+    dlg.strokeWeight = 1;
+    dlg.strokeAlign = 'INSIDE';
+    // Bind to shadow/lg effect style if available, otherwise inline fallback
+    var shadowStyle = EFFECT_STYLE_CACHE['shadow/lg'];
+    if (shadowStyle) {
+      await dlg.setEffectStyleIdAsync(shadowStyle.id);
+    } else {
+      dlg.effects = [
+        { type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.1}, offset:{x:0,y:10}, radius:15, spread:-3, visible:true, blendMode:'NORMAL' },
+        { type:'DROP_SHADOW', color:{r:0,g:0,b:0,a:0.1}, offset:{x:0,y:4},  radius:6,  spread:-4, visible:true, blendMode:'NORMAL' }
+      ];
+    }
 
-  var ct2 = figma.createText();
-  ct2.characters = 'Cancel';
-  setFontSize(ct2, 13);
-  ct2.fontName = fontName('Medium');
-  ct2.fills = [solidPaint('#18181b')];
-  cancel.appendChild(ct2);
-  ct2.layoutSizingHorizontal = 'HUG';
-  ct2.layoutSizingVertical = 'HUG';
+    // Header instance
+    var hdrInst = headerComp.createInstance();
+    hdrInst.name = 'header';
+    dlg.appendChild(hdrInst);
+    hdrInst.layoutSizingHorizontal = 'FILL';
+    hdrInst.layoutSizingVertical = 'HUG';
 
-  var save = figma.createFrame();
-  save.name = 'save-btn';
-  save.resize(90, S.btnH);
-  setRadius(save, S.radius);
-  save.layoutMode = 'HORIZONTAL';
-  save.primaryAxisSizingMode = 'FIXED';
-  save.counterAxisSizingMode = 'FIXED';
-  save.primaryAxisAlignItems = 'CENTER';
-  save.counterAxisAlignItems = 'CENTER';
-  save.fills = [vp('primary', '#18181b')];
-  actions.appendChild(save);
+    // Body instance (slot-ready: right-click → "Convert to slot" in Figma)
+    var bodyInst = bodyComp.createInstance();
+    bodyInst.name = '⊞ body';
+    dlg.appendChild(bodyInst);
+    bodyInst.layoutSizingHorizontal = 'FILL';
+    bodyInst.layoutSizingVertical = 'HUG';
 
-  var st2 = figma.createText();
-  st2.characters = 'Save';
-  setFontSize(st2, 13);
-  st2.fontName = fontName('Medium');
-  st2.fills = [{ type:'SOLID', color:{r:1,g:1,b:1} }];
-  save.appendChild(st2);
-  st2.layoutSizingHorizontal = 'HUG';
-  st2.layoutSizingVertical = 'HUG';
+    // Footer instance
+    var ftrInst = footerComp.createInstance();
+    ftrInst.name = 'footer';
+    dlg.appendChild(ftrInst);
+    ftrInst.layoutSizingHorizontal = 'FILL';
+    ftrInst.layoutSizingVertical = 'HUG';
 
-  var set = figma.combineAsVariants([comp], page);
+    allComps.push(dlg);
+  }
+
+  var set = figma.combineAsVariants(allComps, page);
   set.name = 'Dialog';
   layoutSet(set);
+
+  // Position sub-components above the variant set with 120px clearance
+  var subY = set.y - 120 - Math.max(headerComp.height, footerComp.height, bodyComp.height);
+  headerComp.x = set.x;
+  headerComp.y = subY;
+  bodyComp.x = headerComp.x + headerComp.width + 40;
+  bodyComp.y = subY;
+  footerComp.x = bodyComp.x + bodyComp.width + 40;
+  footerComp.y = subY;
+
   return set;
 }
 
@@ -2511,6 +2779,7 @@ async function buildCanvasComponents(selectedComponents, options, fontFamily) {
   SWITCH_COMP_CACHE = {};
   CHECKBOX_COMP_CACHE = {};
   RADIO_COMP_CACHE = {};
+  FORMFIELD_COMP_CACHE = {};
 
   // buttongroup depends on button being built first
   if (selectedComponents.indexOf('buttongroup') !== -1) {
@@ -2523,6 +2792,20 @@ async function buildCanvasComponents(selectedComponents, options, fontFamily) {
     selectedComponents.splice(bgIdx + 1, 0, 'buttongroup');
   }
 
+  // dialog uses button + input + formfield instances — inject deps first
+  // (processed before formfield so that formfield's own deps get resolved below)
+  var needsDialogAtEnd = false;
+  if (selectedComponents.indexOf('dialog') !== -1) {
+    var dialogDeps = ['button', 'input', 'formfield'];
+    dialogDeps.forEach(function(dep) {
+      if (selectedComponents.indexOf(dep) === -1) {
+        selectedComponents = [dep].concat(selectedComponents);
+      }
+    });
+    selectedComponents = selectedComponents.filter(function(k) { return k !== 'dialog'; });
+    needsDialogAtEnd = true;
+  }
+
   // formfield depends on caches populated by label/input/textarea/select/switch/checkbox/radio
   // Ensure those dependencies are built first, adding them silently if not already selected
   if (selectedComponents.indexOf('formfield') !== -1) {
@@ -2532,9 +2815,14 @@ async function buildCanvasComponents(selectedComponents, options, fontFamily) {
         selectedComponents = [dep].concat(selectedComponents);
       }
     });
-    // Move formfield to the very end
+    // Move formfield to the end (but before dialog)
     selectedComponents = selectedComponents.filter(function(k) { return k !== 'formfield'; });
     selectedComponents.push('formfield');
+  }
+
+  // Push dialog last so it runs after formfield
+  if (needsDialogAtEnd) {
+    selectedComponents.push('dialog');
   }
 
   var pageMode  = options.pageMode;  // 'per-component' | 'grouped' | 'single'
@@ -2575,11 +2863,12 @@ async function buildCanvasComponents(selectedComponents, options, fontFamily) {
     await clearPage(singlePage);
     await figma.setCurrentPageAsync(singlePage);
     var singleSets = [];
-    selectedComponents.forEach(function(key) {
-      if (!builders[key]) return;
-      var set = builders[key](singlePage);
+    for (var ski = 0; ski < selectedComponents.length; ski++) {
+      var skKey = selectedComponents[ski];
+      if (!builders[skKey]) continue;
+      var set = await builders[skKey](singlePage);
       if (set) singleSets.push(set);
-    });
+    }
     placeComponentSets(singlePage, singleSets);
     return;
   }
@@ -2596,10 +2885,10 @@ async function buildCanvasComponents(selectedComponents, options, fontFamily) {
       await clearPage(gPage);
       await figma.setCurrentPageAsync(gPage);
       var groupSets = [];
-      groupKeys.forEach(function(key) {
-        var set = builders[key](gPage);
+      for (var gki = 0; gki < groupKeys.length; gki++) {
+        var set = await builders[groupKeys[gki]](gPage);
         if (set) groupSets.push(set);
-      });
+      }
       placeComponentSets(gPage, groupSets);
     }
     return;
@@ -2615,7 +2904,7 @@ async function buildCanvasComponents(selectedComponents, options, fontFamily) {
     var pg = getOrCreatePage(pageName);
     await clearPage(pg);
     await figma.setCurrentPageAsync(pg);
-    var set = builders[key](pg);
+    var set = await builders[key](pg);
     if (set) placeComponentSets(pg, [set]);
     pagesBuilt[pageName] = true;
   }
