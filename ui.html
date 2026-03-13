@@ -415,7 +415,22 @@
     .swatch { height: 5px; border-radius: 2px; flex: 1; }
 
     /* ── Custom color input ── */
-    .custom-color-row { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+    .custom-color-entry { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+    .custom-entry-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .custom-entry-name {
+      flex: 1; height: 24px; border-radius: var(--radius);
+      border: 1px solid var(--border); background: transparent;
+      color: var(--foreground); font-size: 11px; padding: 0 8px;
+      font-family: inherit; outline: none;
+    }
+    .custom-entry-name:focus { border-color: var(--ring); }
+    .custom-entry-name::placeholder { color: var(--muted-foreground); }
+    .custom-entry-remove {
+      width: 20px; height: 20px; flex-shrink: 0; border-radius: 4px; border: none;
+      background: transparent; color: var(--muted-foreground); cursor: pointer;
+      font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 0;
+    }
+    .custom-entry-remove:hover { background: var(--accent); color: var(--foreground); }
     .custom-color-fields { display: flex; gap: 6px; align-items: center; }
     .custom-color-native {
       width: 28px; height: 28px; flex-shrink: 0; padding: 2px 3px;
@@ -681,14 +696,7 @@
       </div>
       <div class="card-body" style="padding:10px 14px">
         <div class="color-grid" id="colorGrid"></div>
-        <div id="customColorRow" class="custom-color-row" style="display:none">
-          <div class="custom-color-fields">
-            <input type="color" id="customColorNative" class="custom-color-native" value="#3b82f6" />
-            <input type="text"  id="customColorText"   class="custom-color-text"   placeholder="#3b82f6 · rgb(59,130,246) · oklch(58% 0.2 270)" />
-          </div>
-          <div class="custom-shades" id="customShades"></div>
-          <div class="custom-color-error" id="customColorError">Invalid color — use #hex, rgb(), or oklch()</div>
-        </div>
+        <div id="customColorsSection" style="display:none"></div>
       </div>
       <div class="separator"></div>
       <div class="card-body" style="padding:10px 14px">
@@ -1173,7 +1181,18 @@
       return result;
     }
 
-    var customShades = null; // { 50:'#...', 100:'#...', ... } or null
+    var customColorList = []; // [{ id, name, hex, shades }]
+    var customColorIdCounter = 0;
+
+    function sanitizeColorName(name) {
+      return name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || null;
+    }
+    function customColorKey(entry) {
+      return sanitizeColorName(entry.name) || entry.id;
+    }
+    function isCustomKey(key) {
+      return customColorList.some(function(c) { return customColorKey(c) === key; });
+    }
 
     var ALL_COLORS = [
       { key:'slate',   label:'Slate',   swatch:'#64748b' },
@@ -1249,76 +1268,193 @@
       colorGrid.appendChild(item);
     });
 
-    // ── Custom color item (appended after Tailwind swatches) ──────────────────
-    var customItem = document.createElement('div');
-    customItem.className = 'color-item';
-    customItem.id = 'customColorItem';
-    customItem.dataset.key = 'custom';
-    customItem.innerHTML =
-      '<div class="color-swatch" id="customSwatch" style="background:conic-gradient(from 90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00);border-style:dashed"></div>' +
-      '<span class="color-name">Custom</span>';
-    customItem.addEventListener('click', function() {
-      if (selectedColors.has('custom')) {
-        var inUse = Object.keys(roleSelections).filter(function(r) { return roleSelections[r] === 'custom'; });
-        if (inUse.length > 0) return;
-        selectedColors.delete('custom');
-        customItem.classList.remove('selected');
-        document.getElementById('customColorRow').style.display = 'none';
-      } else {
-        selectedColors.add('custom');
-        customItem.classList.add('selected');
-        document.getElementById('customColorRow').style.display = '';
-        document.getElementById('customColorText').focus();
+    // ── Custom color: multi-entry system ─────────────────────────────────────
+
+    function addCustomSwatch(entry) {
+      var key = customColorKey(entry);
+      var swatchItem = document.createElement('div');
+      swatchItem.className = 'color-item selected';
+      swatchItem.id = 'swatch-' + entry.id;
+      swatchItem.dataset.key = key;
+      swatchItem.innerHTML =
+        '<div class="color-swatch" id="cswatch-' + entry.id + '" style="background:conic-gradient(from 90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00);border-style:dashed"></div>' +
+        '<span class="color-name" id="slabel-' + entry.id + '">' + entry.name + '</span>';
+      swatchItem.addEventListener('click', function() {
+        var currentKey = swatchItem.dataset.key;
+        if (selectedColors.has(currentKey)) {
+          var inUse = Object.keys(roleSelections).filter(function(r) { return roleSelections[r] === currentKey; });
+          if (inUse.length > 0) return;
+          selectedColors.delete(currentKey);
+          swatchItem.classList.remove('selected');
+        } else {
+          selectedColors.add(currentKey);
+          swatchItem.classList.add('selected');
+        }
+        updateRoleDropdowns();
+        updatePrimitivesCount();
+        updateColorSelectAllLabel();
+      });
+      colorGrid.insertBefore(swatchItem, customItem);
+      return swatchItem;
+    }
+
+    function createCustomEntry(entry) {
+      var section = document.getElementById('customColorsSection');
+      section.style.display = '';
+
+      var entryEl = document.createElement('div');
+      entryEl.className = 'custom-color-entry';
+      entryEl.id = 'entry-' + entry.id;
+
+      var nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.className = 'custom-entry-name';
+      nameInput.placeholder = 'Color name';
+      nameInput.value = entry.name;
+
+      var removeBtn = document.createElement('button');
+      removeBtn.className = 'custom-entry-remove';
+      removeBtn.textContent = '✕';
+      removeBtn.title = 'Remove this color';
+
+      var header = document.createElement('div');
+      header.className = 'custom-entry-header';
+      header.appendChild(nameInput);
+      header.appendChild(removeBtn);
+
+      var fields = document.createElement('div');
+      fields.className = 'custom-color-fields';
+      var nativePicker = document.createElement('input');
+      nativePicker.type = 'color';
+      nativePicker.className = 'custom-color-native';
+      nativePicker.value = entry.hex || '#3b82f6';
+      var textInput = document.createElement('input');
+      textInput.type = 'text';
+      textInput.className = 'custom-color-text';
+      textInput.placeholder = '#3b82f6 · rgb(59,130,246) · oklch(58% 0.2 270)';
+      fields.appendChild(nativePicker);
+      fields.appendChild(textInput);
+
+      var shadesEl = document.createElement('div');
+      shadesEl.className = 'custom-shades';
+
+      var errEl = document.createElement('div');
+      errEl.className = 'custom-color-error';
+      errEl.textContent = 'Invalid color — use #hex, rgb(), or oklch()';
+
+      entryEl.appendChild(header);
+      entryEl.appendChild(fields);
+      entryEl.appendChild(shadesEl);
+      entryEl.appendChild(errEl);
+      section.appendChild(entryEl);
+
+      function applyColor(val) {
+        var swatchEl = document.getElementById('cswatch-' + entry.id);
+        if (!val) {
+          entry.shades = null;
+          shadesEl.innerHTML = '';
+          errEl.style.display = 'none';
+          if (swatchEl) { swatchEl.style.background = 'conic-gradient(from 90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)'; swatchEl.style.borderStyle = 'dashed'; }
+          return;
+        }
+        var shades = generateCustomShades(val);
+        if (!shades) { entry.shades = null; shadesEl.innerHTML = ''; errEl.style.display = ''; return; }
+        entry.shades = shades;
+        entry.hex = shades[500];
+        errEl.style.display = 'none';
+        if (swatchEl) { swatchEl.style.background = shades[500]; swatchEl.style.borderStyle = ''; }
+        nativePicker.value = shades[500];
+        shadesEl.innerHTML = '';
+        SHADE_KEYS.forEach(function(s) {
+          var sp = document.createElement('span');
+          sp.className = 'custom-shade';
+          sp.style.background = shades[s];
+          sp.title = s + ': ' + shades[s];
+          shadesEl.appendChild(sp);
+        });
       }
+
+      textInput.addEventListener('input', function() { applyColor(this.value.trim()); });
+      nativePicker.addEventListener('input', function() { textInput.value = this.value; applyColor(this.value); });
+
+      nameInput.addEventListener('input', function() {
+        var newName = this.value || ('custom-' + entry.id.replace('cc-', ''));
+        var oldKey = customColorKey(entry);
+        var wasSelected = selectedColors.has(oldKey);
+        var assignedRole = Object.keys(roleSelections).find(function(r) { return roleSelections[r] === oldKey; });
+
+        selectedColors.delete(oldKey);
+        entry.name = newName;
+        var newKey = customColorKey(entry);
+
+        var swatchItem = document.getElementById('swatch-' + entry.id);
+        if (swatchItem) {
+          swatchItem.dataset.key = newKey;
+          var labelEl = document.getElementById('slabel-' + entry.id);
+          if (labelEl) labelEl.textContent = newName;
+        }
+
+        if (wasSelected) selectedColors.add(newKey);
+        if (assignedRole) roleSelections[assignedRole] = newKey;
+
+        updateRoleDropdowns();
+        updatePrimitivesCount();
+        updateColorSelectAllLabel();
+      });
+
+      removeBtn.addEventListener('click', function() { removeCustomColor(entry.id); });
+    }
+
+    function removeCustomColor(id) {
+      var idx = -1;
+      for (var i = 0; i < customColorList.length; i++) { if (customColorList[i].id === id) { idx = i; break; } }
+      if (idx === -1) return;
+      var entry = customColorList[idx];
+      var key = customColorKey(entry);
+
+      selectedColors.delete(key);
+      Object.keys(roleSelections).forEach(function(r) {
+        if (roleSelections[r] === key) roleSelections[r] = Array.from(selectedColors)[0] || 'zinc';
+      });
+
+      var swatchItem = document.getElementById('swatch-' + id);
+      if (swatchItem) swatchItem.remove();
+      var entryEl = document.getElementById('entry-' + id);
+      if (entryEl) entryEl.remove();
+
+      customColorList.splice(idx, 1);
+
+      if (customColorList.length === 0) document.getElementById('customColorsSection').style.display = 'none';
+
+      fixColorGridBorders();
       updateRoleDropdowns();
       updatePrimitivesCount();
       updateColorSelectAllLabel();
-    });
-    colorGrid.appendChild(customItem);
-
-    // ── Custom color input handlers ───────────────────────────────────────────
-    function applyCustomColor(val) {
-      var errEl  = document.getElementById('customColorError');
-      var strip  = document.getElementById('customShades');
-      var swatch = document.getElementById('customSwatch');
-      if (!val) {
-        customShades = null;
-        strip.innerHTML = '';
-        errEl.style.display = 'none';
-        swatch.style.background = 'conic-gradient(from 90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)';
-        swatch.style.borderStyle = 'dashed';
-        return;
-      }
-      var shades = generateCustomShades(val);
-      if (!shades) {
-        customShades = null;
-        strip.innerHTML = '';
-        errEl.style.display = '';
-        return;
-      }
-      customShades = shades;
-      errEl.style.display = 'none';
-      swatch.style.background = shades[500];
-      swatch.style.borderStyle = '';
-      // Native picker syncs to shade 500 hex
-      document.getElementById('customColorNative').value = shades[500];
-      // Shade strip
-      strip.innerHTML = '';
-      SHADE_KEYS.forEach(function(s) {
-        var sp = document.createElement('span');
-        sp.className = 'custom-shade';
-        sp.style.background = shades[s];
-        sp.title = s + ': ' + shades[s];
-        strip.appendChild(sp);
-      });
     }
-    document.getElementById('customColorText').addEventListener('input', function() {
-      applyCustomColor(this.value.trim());
-    });
-    document.getElementById('customColorNative').addEventListener('input', function() {
-      document.getElementById('customColorText').value = this.value;
-      applyCustomColor(this.value);
-    });
+
+    function addCustomColor() {
+      customColorIdCounter++;
+      var defaultName = 'custom' + (customColorIdCounter > 1 ? '-' + customColorIdCounter : '');
+      var entry = { id: 'cc-' + customColorIdCounter, name: defaultName, hex: '#3b82f6', shades: null };
+      customColorList.push(entry);
+      selectedColors.add(customColorKey(entry));
+      addCustomSwatch(entry);
+      createCustomEntry(entry);
+      fixColorGridBorders();
+      updateRoleDropdowns();
+      updatePrimitivesCount();
+      updateColorSelectAllLabel();
+    }
+
+    // ── "+" swatch — always adds a new custom color ───────────────────────────
+    var customItem = document.createElement('div');
+    customItem.className = 'color-item';
+    customItem.id = 'customColorItem';
+    customItem.innerHTML =
+      '<div class="color-swatch" style="background:transparent;border-style:dashed;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;font-weight:300;color:#71717a">+</div>' +
+      '<span class="color-name">Custom</span>';
+    customItem.addEventListener('click', addCustomColor);
+    colorGrid.appendChild(customItem);
 
     // Remove last row's bottom borders dynamically
     function fixColorGridBorders() {
@@ -1332,22 +1468,22 @@
 
     var selectAllColorsBtn = document.getElementById('selectAllColorsBtn');
     function updateColorSelectAllLabel() {
-      // Custom item is separate from ALL_COLORS; compare only Tailwind colors
-      var twSelected = Array.from(selectedColors).filter(function(k) { return k !== 'custom'; });
+      var twSelected = Array.from(selectedColors).filter(function(k) { return !isCustomKey(k); });
       selectAllColorsBtn.textContent = twSelected.length === ALL_COLORS.length ? 'Deselect all' : 'Select all';
     }
     selectAllColorsBtn.addEventListener('click', function() {
-      var twSelected = Array.from(selectedColors).filter(function(k) { return k !== 'custom'; });
+      var twSelected = Array.from(selectedColors).filter(function(k) { return !isCustomKey(k); });
       var allSel = twSelected.length === ALL_COLORS.length;
       if (allSel) {
-        // Keep only colors used by roles (but preserve custom if it's in use)
         var needed = new Set(Object.keys(roleSelections).map(function(r) { return roleSelections[r]; }));
+        // Always preserve custom color keys
+        customColorList.forEach(function(c) { needed.add(customColorKey(c)); });
         selectedColors = new Set(needed);
       } else {
         ALL_COLORS.forEach(function(c) { selectedColors.add(c.key); });
       }
       colorGrid.querySelectorAll('.color-item').forEach(function(el) {
-        el.classList.toggle('selected', selectedColors.has(el.dataset.key));
+        if (el.dataset.key) el.classList.toggle('selected', selectedColors.has(el.dataset.key));
       });
       updateRoleDropdowns();
       updatePrimitivesCount();
@@ -1358,7 +1494,10 @@
     function updateRoleDropdowns() {
       var selArr = [];
       ALL_COLORS.forEach(function(c) { if (selectedColors.has(c.key)) selArr.push(c); });
-      if (selectedColors.has('custom')) selArr.push({ key:'custom', label:'Custom' });
+      customColorList.forEach(function(c) {
+        var key = customColorKey(c);
+        if (selectedColors.has(key)) selArr.push({ key: key, label: c.name || key });
+      });
       ['Neutral','Primary','Destructive','Success','Warning','Info'].forEach(function(role) {
         var id = 'role' + role;
         var sel = document.getElementById(id);
@@ -1638,7 +1777,7 @@
             type: 'generate',
             options: {
               selectedColors:        Array.from(selectedColors),
-              customColors:          customShades ? { custom: customShades } : {},
+              customColors:          (function() { var r = {}; customColorList.forEach(function(c) { if (c.shades && selectedColors.has(customColorKey(c))) r[customColorKey(c)] = c.shades; }); return r; })(),
               semanticRoles:         Object.assign({}, roleSelections),
               tokenStructure:        tokenStructure,
               opacityVariants:       opacityEnabled ? Array.from(opacitySteps) : [],

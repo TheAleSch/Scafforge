@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.6
+
+- Custom colors: support multiple custom color palettes, each with a user-defined name
+- Custom color names sanitize to valid color scale keys (e.g. "My Brand" → `my-brand`)
+- Custom swatches show shade-500 preview once a color is entered
+- Rebuild: fix SEMANTIC_TOKENS not set, double buildVarCache, missing cache update for fresh-build branch, and transferStandaloneComponent remove() on wrong page
+
 ## v1.5
 
 - Add Rebuild mode: update existing components in-place without breaking instances
