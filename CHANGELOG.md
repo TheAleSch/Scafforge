@@ -6,6 +6,7 @@
 - Custom color names sanitize to valid color scale keys (e.g. "My Brand" → `my-brand`)
 - Custom swatches show shade-500 preview once a color is entered
 - Rebuild: fix SEMANTIC_TOKENS not set, double buildVarCache, missing cache update for fresh-build branch, and transferStandaloneComponent remove() on wrong page
+- Rebuild: fix Focus (and other variants) not transferring — call tempPage.loadAsync() after switching to existingPage so tempPage nodes remain readable in dynamic-page mode
 
 ## v1.5
 

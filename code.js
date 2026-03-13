@@ -3285,6 +3285,9 @@ async function rebuildCanvasComponents(selectedComponents, options, fontFamily) 
 
       // Switch to existing page so Figma allows modifications to its nodes
       await figma.setCurrentPageAsync(existingPage);
+      // Re-load tempPage so its nodes remain accessible for reading during transfer
+      // (setCurrentPageAsync unloads the previous page in dynamic-page mode)
+      await tempPage.loadAsync();
 
       if (newSet) {
         // Find old variant set on existing page by name
