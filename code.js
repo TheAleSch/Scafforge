@@ -1,5 +1,16 @@
 figma.showUI(__html__, { width: 460, height: 800, title: 'Scafforge' });
 
+// ─── Init: detect existing components so UI can show rebuild button ──────────
+(async function() {
+  var compNames = ['Button','Button Group','Form Field','Label','Input','Textarea',
+    'Select','Switch','Checkbox','Radio','Slider','Badge','Card','Alert','Toast','Dialog'];
+  var pageNames = figma.root.children.map(function(p) { return p.name; });
+  var hasComponents = compNames.some(function(n) { return pageNames.indexOf(n) !== -1; });
+  if (hasComponents) {
+    figma.ui.postMessage({ type: 'has-components' });
+  }
+})();
+
 // ─── Tailwind 4 Color Palette ────────────────────────────────────────────────
 var TW_COLORS = {
   slate:   { 50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',300:'#cbd5e1',400:'#94a3b8',500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a',950:'#020617' },
@@ -849,6 +860,16 @@ async function buildVarCache() {
   });
 }
 
+// Detect which token structure the file is using by looking at variable collections
+async function detectTokenStructure() {
+  var cols = await figma.variables.getLocalVariableCollectionsAsync();
+  for (var i = 0; i < cols.length; i++) {
+    if (cols[i].name === 'Ale/Themes') return 'improved';
+    if (cols[i].name === 'Themes') return 'classic';
+  }
+  return 'classic';
+}
+
 // Returns a SOLID paint, bound to a variable if found, else fallback hex
 // tokenName can be a theme token ('primary') or component token ('button/default/background').
 // Tries exact match first. If a compToken (3rd arg) is given, tries that first.
@@ -1240,21 +1261,15 @@ function buildButtonPage(page) {
 
         if (sz.key.indexOf('icon') === 0) {
           var iconInst = getIcon('plus');
-          if (iconInst) {
-            tintIcon(iconInst, fgPaint);
-            comp.appendChild(iconInst);
-            iconInst.layoutSizingHorizontal = 'FIXED';
-            iconInst.layoutSizingVertical = 'FIXED';
-          } else {
-            var icon = figma.createFrame();
-            icon.name = 'icon-placeholder';
-            icon.resize(sz.fz, sz.fz);
-            icon.cornerRadius = 2;
-            icon.fills = [];
-            icon.strokes = [fgPaint];
-            icon.strokeWeight = 1.5;
-            comp.appendChild(icon);
+          if (!iconInst) {
+            // No icon library — use generic icon component so it's still swappable
+            iconInst = getOrCreateGenericIcon().createInstance();
           }
+          iconInst.name = 'icon';
+          tintIcon(iconInst, fgPaint);
+          comp.appendChild(iconInst);
+          iconInst.layoutSizingHorizontal = 'FIXED';
+          iconInst.layoutSizingVertical = 'FIXED';
         } else {
           var t = figma.createText();
           t.characters = v.label;
@@ -2911,6 +2926,435 @@ async function buildCanvasComponents(selectedComponents, options, fontFamily) {
 
 }
 
+// ─── Transfer helpers (rebuild mode) ─────────────────────────────────────────
+
+// Transplant children + visual properties from newComp into oldComp (preserving oldComp's node ID).
+// stagingPage: old children are reparented there instead of removed (avoids Figma "not allowed" errors).
+async function transferComponent(oldComp, newComp, stagingPage) {
+  // Copy layout properties
+  oldComp.layoutMode             = newComp.layoutMode;
+  oldComp.primaryAxisSizingMode  = newComp.primaryAxisSizingMode;
+  oldComp.counterAxisSizingMode  = newComp.counterAxisSizingMode;
+  oldComp.primaryAxisAlignItems  = newComp.primaryAxisAlignItems;
+  oldComp.counterAxisAlignItems  = newComp.counterAxisAlignItems;
+  oldComp.paddingLeft            = newComp.paddingLeft;
+  oldComp.paddingRight           = newComp.paddingRight;
+  oldComp.paddingTop             = newComp.paddingTop;
+  oldComp.paddingBottom          = newComp.paddingBottom;
+  oldComp.itemSpacing            = newComp.itemSpacing;
+  oldComp.clipsContent           = newComp.clipsContent;
+  oldComp.opacity                = newComp.opacity;
+
+  // Copy size
+  oldComp.resize(newComp.width, newComp.height);
+
+  // Copy visual fills/strokes (paint objects carry variable bindings)
+  oldComp.fills       = newComp.fills;
+  oldComp.strokes     = newComp.strokes;
+  oldComp.strokeWeight = newComp.strokeWeight;
+  oldComp.strokeAlign  = newComp.strokeAlign;
+  oldComp.effects      = newComp.effects;
+
+  // Copy corner radius (individual corners for mixed radii)
+  if (newComp.cornerRadius !== figma.mixed) {
+    oldComp.cornerRadius = newComp.cornerRadius;
+  } else {
+    oldComp.topLeftRadius     = newComp.topLeftRadius;
+    oldComp.topRightRadius    = newComp.topRightRadius;
+    oldComp.bottomLeftRadius  = newComp.bottomLeftRadius;
+    oldComp.bottomRightRadius = newComp.bottomRightRadius;
+  }
+
+  // Copy bound float variables (padding, radius, itemSpacing, etc.)
+  var bv = newComp.boundVariables;
+  if (bv) {
+    var floatFields = [
+      'paddingLeft','paddingRight','paddingTop','paddingBottom',
+      'itemSpacing','topLeftRadius','topRightRadius','bottomLeftRadius','bottomRightRadius',
+      'opacity','strokeWeight'
+    ];
+    for (var fi = 0; fi < floatFields.length; fi++) {
+      var field = floatFields[fi];
+      if (bv[field]) {
+        var varObj = await figma.variables.getVariableByIdAsync(bv[field].id);
+        if (varObj) oldComp.setBoundVariable(field, varObj);
+      }
+    }
+  }
+
+  // Move old children to staging page (avoids calling remove() on component children,
+  // which Figma blocks in dynamic-page mode). They get cleaned up when stagingPage is removed.
+  var oldChildren = [];
+  for (var ci = 0; ci < oldComp.children.length; ci++) oldChildren.push(oldComp.children[ci]);
+  for (var ri = 0; ri < oldChildren.length; ri++) {
+    if (stagingPage) stagingPage.appendChild(oldChildren[ri]);
+  }
+
+  // Move new children into old component
+  while (newComp.children.length > 0) {
+    oldComp.appendChild(newComp.children[0]);
+  }
+}
+
+// Transfer variant set: match old variants by name, add new ones
+async function transferVariantSet(oldSet, newSet, stagingPage) {
+  // Build map of old variants by name
+  var oldMap = {};
+  for (var i = 0; i < oldSet.children.length; i++) {
+    var child = oldSet.children[i];
+    if (child.type === 'COMPONENT') {
+      oldMap[child.name] = child;
+    }
+  }
+
+  // Collect new children first (array copy since we'll mutate)
+  var newVariants = [];
+  for (var j = 0; j < newSet.children.length; j++) {
+    newVariants.push(newSet.children[j]);
+  }
+
+  for (var k = 0; k < newVariants.length; k++) {
+    var newComp = newVariants[k];
+    if (newComp.type !== 'COMPONENT') continue;
+
+    var match = oldMap[newComp.name];
+    if (match) {
+      // Transfer contents into existing variant
+      await transferComponent(match, newComp, stagingPage);
+      // Don't remove newComp here — can't remove last child of a COMPONENT_SET.
+      // The entire newSet gets cleaned up when the temp page is removed.
+    } else {
+      // New variant — move into old set
+      oldSet.appendChild(newComp);
+    }
+  }
+
+  // Re-layout the set
+  layoutSet(oldSet);
+}
+
+// Transfer standalone sub-component (e.g. DialogHeader) by finding it on the page by name
+async function transferStandaloneComponent(page, newComp, stagingPage) {
+  var existing = null;
+  for (var i = 0; i < page.children.length; i++) {
+    var child = page.children[i];
+    if (child.type === 'COMPONENT' && child.name === newComp.name) {
+      existing = child;
+      break;
+    }
+  }
+  if (existing) {
+    await transferComponent(existing, newComp, stagingPage);
+    // Don't call newComp.remove() here — it's on tempPage (not current page), which
+    // would throw in dynamic-page mode. tempPage.remove() cleans it up instead.
+  } else {
+    // New sub-component — just move it to the page
+    page.appendChild(newComp);
+  }
+}
+
+// Rebuild components in-place (preserving node IDs so instances stay linked)
+async function rebuildCanvasComponents(selectedComponents, options, fontFamily) {
+  CANVAS_FONT = fontFamily || 'Inter';
+  S = STYLE_PRESETS[options.style] || STYLE_PRESETS.vega;
+  // VAR_CACHE already populated by the rebuild handler before calling this function
+
+  // Icon library setup (same as buildCanvasComponents)
+  ICON_CACHE        = {};
+  GENERIC_ICON_COMP = null;
+  ACTIVE_ICON_LIB   = options.iconLibrary || '';
+  if (ACTIVE_ICON_LIB === 'lucide' || ACTIVE_ICON_LIB === 'iconnoir') {
+    var iconsData    = RUNTIME_ICONS;
+    var libLabel     = ACTIVE_ICON_LIB === 'lucide' ? 'Lucide' : 'Iconoir';
+    var iconPageName = 'Icons \u2014 ' + libLabel;
+    // Check if icon page exists; if so, reuse it (don't clear — icons don't need rebuild)
+    var iconPg = null;
+    for (var ip = 0; ip < figma.root.children.length; ip++) {
+      if (figma.root.children[ip].name === iconPageName) { iconPg = figma.root.children[ip]; break; }
+    }
+    if (iconPg) {
+      // Populate ICON_CACHE from existing icon page
+      await iconPg.loadAsync();
+      for (var ic = 0; ic < iconPg.children.length; ic++) {
+        var node = iconPg.children[ic];
+        if (node.type === 'COMPONENT') ICON_CACHE[node.name] = node;
+      }
+      if (!GENERIC_ICON_COMP && ICON_CACHE['placeholder']) GENERIC_ICON_COMP = ICON_CACHE['placeholder'];
+    } else {
+      // No icon page — build one fresh
+      iconPg = getOrCreatePage(iconPageName);
+      await clearPage(iconPg);
+      await figma.setCurrentPageAsync(iconPg);
+      buildIconPage(iconPg, libLabel, iconsData);
+    }
+  } else if (ACTIVE_ICON_LIB === 'none') {
+    // Check for existing generic icon page
+    var genericPgName = 'Icon \u2014 Insert your library here';
+    var gPg = null;
+    for (var gp = 0; gp < figma.root.children.length; gp++) {
+      if (figma.root.children[gp].name === genericPgName) { gPg = figma.root.children[gp]; break; }
+    }
+    if (gPg) {
+      await gPg.loadAsync();
+      for (var gc = 0; gc < gPg.children.length; gc++) {
+        if (gPg.children[gc].type === 'COMPONENT') { GENERIC_ICON_COMP = gPg.children[gc]; break; }
+      }
+    } else {
+      gPg = getOrCreatePage(genericPgName);
+      await clearPage(gPg);
+      await figma.setCurrentPageAsync(gPg);
+      GENERIC_ICON_COMP = getOrCreateGenericIcon();
+      gPg.appendChild(GENERIC_ICON_COMP);
+    }
+  }
+
+  // Clear component caches
+  BUTTON_COMP_CACHE = {};
+  LABEL_COMP_CACHE = {};
+  INPUT_COMP_CACHE = {};
+  TEXTAREA_COMP_CACHE = {};
+  SELECT_COMP_CACHE = {};
+  SWITCH_COMP_CACHE = {};
+  CHECKBOX_COMP_CACHE = {};
+  RADIO_COMP_CACHE = {};
+  FORMFIELD_COMP_CACHE = {};
+
+  // Pre-populate caches from existing pages so dependency components (e.g. Input for FormField)
+  // are available even when they're not part of the current rebuild selection.
+  var cachePageMap = {
+    'Button':     function(c) { BUTTON_COMP_CACHE[c.name] = c; },
+    'Label':      function(c) { LABEL_COMP_CACHE[c.name] = c; },
+    'Input':      function(c) { INPUT_COMP_CACHE[c.name] = c; },
+    'Textarea':   function(c) { TEXTAREA_COMP_CACHE[c.name] = c; },
+    'Select':     function(c) { SELECT_COMP_CACHE[c.name] = c; },
+    'Switch':     function(c) { SWITCH_COMP_CACHE[c.name] = c; },
+    'Checkbox':   function(c) { CHECKBOX_COMP_CACHE[c.name] = c; },
+    'Radio':      function(c) { RADIO_COMP_CACHE[c.name] = c; },
+    'Form Field': function(c) { FORMFIELD_COMP_CACHE[c.name] = c; },
+  };
+  for (var pri = 0; pri < figma.root.children.length; pri++) {
+    var prPage = figma.root.children[pri];
+    var prFill = cachePageMap[prPage.name];
+    if (!prFill) continue;
+    await prPage.loadAsync();
+    for (var prci = 0; prci < prPage.children.length; prci++) {
+      var prNode = prPage.children[prci];
+      if (prNode.type === 'COMPONENT_SET') {
+        for (var prvi = 0; prvi < prNode.children.length; prvi++) {
+          if (prNode.children[prvi].type === 'COMPONENT') prFill(prNode.children[prvi]);
+        }
+      }
+    }
+  }
+
+  // Load any fonts used in existing components (e.g. Poppins from a previous generate run)
+  // so builders can set text on instances of those components without throwing font errors.
+  var fontsToLoad = {};
+  function collectFonts(node) {
+    if (node.type === 'TEXT' && node.fontName && node.fontName !== figma.mixed) {
+      var key = node.fontName.family + '/' + node.fontName.style;
+      if (!fontsToLoad[key]) fontsToLoad[key] = node.fontName;
+    }
+    if (node.children) {
+      for (var fi = 0; fi < node.children.length; fi++) collectFonts(node.children[fi]);
+    }
+  }
+  for (var fpi = 0; fpi < figma.root.children.length; fpi++) {
+    var fpPage = figma.root.children[fpi];
+    if (cachePageMap[fpPage.name]) {
+      for (var fpci = 0; fpci < fpPage.children.length; fpci++) collectFonts(fpPage.children[fpci]);
+    }
+  }
+  var fontKeys = Object.keys(fontsToLoad);
+  for (var fki = 0; fki < fontKeys.length; fki++) {
+    var fn = fontsToLoad[fontKeys[fki]];
+    if (!LOADED_STYLES[fn.family + '/' + fn.style]) {
+      try {
+        await figma.loadFontAsync(fn);
+        LOADED_STYLES[fn.family + '/' + fn.style] = true;
+      } catch(e) { /* font unavailable, skip */ }
+    }
+  }
+
+  var builders = {
+    button:      buildButtonPage,
+    buttongroup: buildButtonGroupPage,
+    formfield:   buildFormFieldPage,
+    label:       buildLabelPage,
+    input:       buildInputPage,
+    textarea:    buildTextareaPage,
+    select:      buildSelectPage,
+    switch:      buildSwitchPage,
+    checkbox:    buildCheckboxPage,
+    radio:       buildRadioPage,
+    slider:      buildSliderPage,
+    badge:       buildBadgePage,
+    card:        buildCardPage,
+    alert:       buildAlertPage,
+    toast:       buildToastPage,
+    dialog:      buildDialogPage,
+  };
+
+  // Dialog sub-component names (standalone components outside the variant set)
+  var DIALOG_SUBS = ['DialogHeader', 'DialogFooter', '\u229E DialogBody'];
+
+  for (var ci = 0; ci < selectedComponents.length; ci++) {
+    var key = selectedComponents[ci];
+    var def = COMPONENT_DEFINITIONS[key];
+    if (!def || !builders[key]) continue;
+    var pageName = def.name;
+
+    // Find existing page
+    var existingPage = null;
+    for (var pi = 0; pi < figma.root.children.length; pi++) {
+      if (figma.root.children[pi].name === pageName) {
+        existingPage = figma.root.children[pi];
+        break;
+      }
+    }
+
+    if (!existingPage) {
+      // No existing page — fall back to normal build
+      var pg = getOrCreatePage(pageName);
+      await clearPage(pg);
+      await figma.setCurrentPageAsync(pg);
+      var set = await builders[key](pg);
+      if (set) placeComponentSets(pg, [set]);
+      // Populate caches from the freshly built page so later components (e.g. formfield) find deps
+      for (var fpni = 0; fpni < pg.children.length; fpni++) {
+        var fpNode = pg.children[fpni];
+        if (fpNode.type === 'COMPONENT_SET') {
+          for (var fpvi = 0; fpvi < fpNode.children.length; fpvi++) {
+            var fpComp = fpNode.children[fpvi];
+            if (fpComp.type !== 'COMPONENT') continue;
+            if (key === 'button')    BUTTON_COMP_CACHE[fpComp.name] = fpComp;
+            if (key === 'label')     LABEL_COMP_CACHE[fpComp.name] = fpComp;
+            if (key === 'input')     INPUT_COMP_CACHE[fpComp.name] = fpComp;
+            if (key === 'textarea')  TEXTAREA_COMP_CACHE[fpComp.name] = fpComp;
+            if (key === 'select')    SELECT_COMP_CACHE[fpComp.name] = fpComp;
+            if (key === 'switch')    SWITCH_COMP_CACHE[fpComp.name] = fpComp;
+            if (key === 'checkbox')  CHECKBOX_COMP_CACHE[fpComp.name] = fpComp;
+            if (key === 'radio')     RADIO_COMP_CACHE[fpComp.name] = fpComp;
+            if (key === 'formfield') FORMFIELD_COMP_CACHE[fpComp.name] = fpComp;
+          }
+        }
+      }
+    } else {
+      // In-place rebuild: build on temp page (staging), then transfer into existing page
+      await existingPage.loadAsync();
+
+      // Build on temp page (must be current so createComponent() targets the right page)
+      var tempPage = figma.createPage();
+      tempPage.name = '__rebuild_temp__';
+      await figma.setCurrentPageAsync(tempPage);
+      var newSet = await builders[key](tempPage);
+
+      // Dialog: while tempPage is still current, remap instances inside new variants so they
+      // reference the EXISTING sub-components (old IDs) instead of the new ones (which will
+      // disappear with tempPage). This preserves all pre-existing instance connections.
+      if (key === 'dialog' && newSet) {
+        // Map: instance child name → existing sub-component node on existingPage
+        var instToExisting = {
+          'header':    'DialogHeader',
+          'footer':    'DialogFooter',
+          '\u229E body': '\u229E DialogBody',
+        };
+        var instNames = Object.keys(instToExisting);
+        var existingSubMap = {};
+        for (var esi = 0; esi < instNames.length; esi++) {
+          var compName = instToExisting[instNames[esi]];
+          for (var epi = 0; epi < existingPage.children.length; epi++) {
+            if (existingPage.children[epi].type === 'COMPONENT' && existingPage.children[epi].name === compName) {
+              existingSubMap[instNames[esi]] = existingPage.children[epi];
+              break;
+            }
+          }
+        }
+        // Swap instances in each new variant to point at existing sub-components
+        for (var nvi = 0; nvi < newSet.children.length; nvi++) {
+          var variant = newSet.children[nvi];
+          if (variant.type !== 'COMPONENT') continue;
+          for (var vci = 0; vci < variant.children.length; vci++) {
+            var vchild = variant.children[vci];
+            if (vchild.type === 'INSTANCE' && existingSubMap[vchild.name]) {
+              vchild.swapComponent(existingSubMap[vchild.name]);
+            }
+          }
+        }
+      }
+
+      // Switch to existing page so Figma allows modifications to its nodes
+      await figma.setCurrentPageAsync(existingPage);
+
+      if (newSet) {
+        // Find old variant set on existing page by name
+        var oldSet = null;
+        for (var si = 0; si < existingPage.children.length; si++) {
+          var child = existingPage.children[si];
+          if (child.type === 'COMPONENT_SET' && child.name === def.name) {
+            oldSet = child;
+            break;
+          }
+        }
+
+        if (oldSet) {
+          // tempPage is the staging bin: old children get parked there, then deleted with tempPage
+          await transferVariantSet(oldSet, newSet, tempPage);
+        } else {
+          // No existing variant set — move the new one onto the page
+          existingPage.appendChild(newSet);
+          placeComponentSets(existingPage, [newSet]);
+        }
+
+        // Dialog: transfer sub-component content (existingHeader etc. get updated internals)
+        if (key === 'dialog') {
+          for (var di = 0; di < DIALOG_SUBS.length; di++) {
+            var subName = DIALOG_SUBS[di];
+            var newSub = null;
+            for (var ti = 0; ti < tempPage.children.length; ti++) {
+              if (tempPage.children[ti].type === 'COMPONENT' && tempPage.children[ti].name === subName) {
+                newSub = tempPage.children[ti];
+                break;
+              }
+            }
+            if (newSub) {
+              await transferStandaloneComponent(existingPage, newSub, tempPage);
+            }
+          }
+        }
+      }
+
+      // Remove temp page — takes all staged (old) children with it
+      tempPage.remove();
+    }
+
+    // Populate caches from the (now-updated) existing components
+    if (existingPage) {
+      await existingPage.loadAsync();
+      for (var cacheI = 0; cacheI < existingPage.children.length; cacheI++) {
+        var node = existingPage.children[cacheI];
+        if (node.type === 'COMPONENT_SET') {
+          for (var vi = 0; vi < node.children.length; vi++) {
+            var comp = node.children[vi];
+            if (comp.type !== 'COMPONENT') continue;
+            if (key === 'button')    BUTTON_COMP_CACHE[comp.name] = comp;
+            if (key === 'label')     LABEL_COMP_CACHE[comp.name] = comp;
+            if (key === 'input')     INPUT_COMP_CACHE[comp.name] = comp;
+            if (key === 'textarea')  TEXTAREA_COMP_CACHE[comp.name] = comp;
+            if (key === 'select')    SELECT_COMP_CACHE[comp.name] = comp;
+            if (key === 'switch')    SWITCH_COMP_CACHE[comp.name] = comp;
+            if (key === 'checkbox')  CHECKBOX_COMP_CACHE[comp.name] = comp;
+            if (key === 'radio')     RADIO_COMP_CACHE[comp.name] = comp;
+            if (key === 'formfield') FORMFIELD_COMP_CACHE[comp.name] = comp;
+          }
+        }
+      }
+    }
+
+    sendProgress('Rebuilt ' + pageName + '…', Math.round(40 + (ci / selectedComponents.length) * 55));
+  }
+}
+
 // ─── Message handler ──────────────────────────────────────────────────────────
 
 figma.ui.onmessage = async function(msg) {
@@ -3019,6 +3463,48 @@ figma.ui.onmessage = async function(msg) {
     } finally {
       // Remove injected custom scales so TW_COLORS stays clean between runs
       injectedColorKeys.forEach(function(k) { delete TW_COLORS[k]; });
+    }
+  }
+  if (msg.type === 'rebuild') {
+    var opts = msg.options;
+    try {
+      var tokenStructure = await detectTokenStructure();
+      USE_ALE_MAP = tokenStructure === 'improved';
+      SEMANTIC_TOKENS = tokenStructure === 'improved'
+        ? getImprovedSemanticTokens(DEFAULT_ROLES)
+        : getSemanticTokens(DEFAULT_ROLES);
+
+      sendProgress('Reading existing tokens…', 10);
+      await buildVarCache();
+      if (Object.keys(VAR_CACHE).length === 0) {
+        figma.ui.postMessage({ type: 'no-variables' });
+        return;
+      }
+
+      if (opts.iconData) RUNTIME_ICONS = opts.iconData;
+
+      sendProgress('Loading fonts…', 20);
+      LOADED_STYLES = {};
+      var fontFamily = opts.fontFamily || 'Inter';
+      try {
+        await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
+        LOADED_STYLES['Inter/Regular'] = true;
+      } catch(e) { /* Inter not available */ }
+      var stylesToLoad = ['Regular', 'Medium', 'Semi Bold', 'Bold'];
+      for (var fi = 0; fi < stylesToLoad.length; fi++) {
+        try {
+          await figma.loadFontAsync({ family: fontFamily, style: stylesToLoad[fi] });
+          LOADED_STYLES[fontFamily + '/' + stylesToLoad[fi]] = true;
+        } catch(e) { /* style not available, skip */ }
+      }
+
+      sendProgress('Rebuilding components…', 40);
+      await rebuildCanvasComponents(opts.components, opts, fontFamily);
+
+      sendProgress('Rebuild complete!', 100);
+      figma.ui.postMessage({ type: 'done' });
+    } catch (err) {
+      figma.ui.postMessage({ type: 'error', message: err.message || String(err) });
     }
   }
   if (msg.type === 'resize') {

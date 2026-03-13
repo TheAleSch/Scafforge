@@ -138,6 +138,13 @@
     }
     .btn-primary:hover:not(:disabled) { opacity: 0.9; }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-outline {
+      background: transparent; color: var(--foreground);
+      border: 1px solid var(--border);
+      padding: 7px 14px; width: 100%; font-size: 13px;
+    }
+    .btn-outline:hover:not(:disabled) { background: var(--accent); }
+    .btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-ghost {
       background: transparent; color: var(--muted-foreground);
       padding: 2px 4px;
@@ -1057,6 +1064,7 @@
       <div class="progress-text" id="progressText"></div>
     </div>
     <button class="btn btn-primary" id="generateBtn">Generate</button>
+    <button class="btn btn-outline" id="rebuildBtn" style="display:none">Rebuild Selected Components</button>
   </div>
 
   <script>
@@ -1427,6 +1435,7 @@
     ];
 
     var selected = new Set();
+    var fileHasComponents = false; // set to true when backend reports existing components
     var grid = document.getElementById('compGrid');
 
     COMPONENTS.forEach(function(comp, i) {
@@ -1597,6 +1606,10 @@
 
     // ── Generate ──────────────────────────────────────────────────────────────
     document.getElementById('generateBtn').addEventListener('click', function() {
+      if (fileHasComponents) {
+        var ok = confirm('This will delete all existing component pages and recreate them from scratch.\n\nUse "Rebuild Selected Components" to update components without deleting instances.\n\nContinue?');
+        if (!ok) return;
+      }
       var btn = document.getElementById('generateBtn');
       btn.disabled = true;
       btn.textContent = 'Generating…';
@@ -1646,6 +1659,46 @@
               fontFamily:            document.getElementById('fontSelect').value,
               iconLibrary:           activeIconLib,
               iconData:              iconData,
+            }
+          }
+        }, '*');
+      });
+    });
+
+    // ── Rebuild ───────────────────────────────────────────────────────────────
+    document.getElementById('rebuildBtn').addEventListener('click', function() {
+      if (selected.size === 0) return;
+      var rebuildBtn = document.getElementById('rebuildBtn');
+      var genBtn = document.getElementById('generateBtn');
+      rebuildBtn.disabled = true;
+      rebuildBtn.textContent = 'Rebuilding…';
+      genBtn.disabled = true;
+      document.getElementById('progressArea').style.display = 'flex';
+      document.getElementById('progressFill').style.background = 'var(--primary)';
+      document.getElementById('progressFill').style.width = '0%';
+      document.getElementById('progressText').textContent = 'Starting rebuild…';
+
+      var iconPromise = (activeIconLib && activeIconLib !== 'none')
+        ? fetchIcons(activeIconLib)
+        : Promise.resolve(null);
+
+      iconPromise.then(function(iconData) {
+        var pageMode = 'per-component';
+        if (canvasToggle.checked) {
+          document.querySelectorAll('input[name="pageMode"]').forEach(function(r) {
+            if (r.checked) pageMode = r.value;
+          });
+        }
+        parent.postMessage({
+          pluginMessage: {
+            type: 'rebuild',
+            options: {
+              components:   Array.from(selected),
+              style:        activeStyle,
+              fontFamily:   document.getElementById('fontSelect').value,
+              iconLibrary:  activeIconLib,
+              iconData:     iconData,
+              pageMode:     pageMode,
             }
           }
         }, '*');
@@ -1702,6 +1755,10 @@
     window.onmessage = function(event) {
       var msg = event.data.pluginMessage;
       if (!msg) return;
+      if (msg.type === 'has-components') {
+        fileHasComponents = true;
+        document.getElementById('rebuildBtn').style.display = '';
+      }
       if (msg.type === 'progress') {
         document.getElementById('progressFill').style.width = msg.percent + '%';
         document.getElementById('progressText').textContent = msg.message;
@@ -1712,13 +1769,34 @@
         document.getElementById('progressText').textContent = 'Done! Variables created in Figma.';
         var btn = document.getElementById('generateBtn');
         btn.disabled = false;
-        btn.textContent = canvasToggle.checked ? 'Regenerate Variables + Components' : 'Regenerate Variables';
+        btn.textContent = 'Generate';
+        // Show and reset rebuild button
+        var rbBtn = document.getElementById('rebuildBtn');
+        rbBtn.style.display = '';
+        rbBtn.disabled = false;
+        rbBtn.textContent = 'Rebuild Selected Components';
       }
       if (msg.type === 'cleared') {
         document.getElementById('progressText').textContent = 'File cleared.';
         document.getElementById('progressFill').style.width = '100%';
         document.getElementById('progressFill').style.background = '#10b981';
         document.getElementById('progressArea').style.display = 'flex';
+        // Hide rebuild button and reset state after clearing
+        fileHasComponents = false;
+        document.getElementById('rebuildBtn').style.display = 'none';
+      }
+      if (msg.type === 'no-variables') {
+        // No tokens found — ask the user what to do
+        var rbBtn = document.getElementById('rebuildBtn');
+        rbBtn.disabled = false;
+        rbBtn.textContent = 'Rebuild Selected Components';
+        document.getElementById('generateBtn').disabled = false;
+        document.getElementById('progressFill').style.background = '#ef4444';
+        document.getElementById('progressText').textContent = 'No design tokens found.';
+        var doGenerate = confirm('No design tokens found in this file.\n\nClick OK to generate variables first, or Cancel to abort.');
+        if (doGenerate) {
+          document.getElementById('generateBtn').click();
+        }
       }
       if (msg.type === 'error') {
         document.getElementById('progressFill').style.background = '#ef4444';
@@ -1726,6 +1804,12 @@
         var btn = document.getElementById('generateBtn');
         btn.disabled = false;
         btn.textContent = 'Retry';
+        // Reset rebuild button if visible
+        var rbBtn = document.getElementById('rebuildBtn');
+        if (rbBtn.style.display !== 'none') {
+          rbBtn.disabled = false;
+          rbBtn.textContent = 'Rebuild Selected Components';
+        }
       }
     };
   </script>
