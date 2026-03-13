@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commit Rules
 
 - Never add `Co-Authored-By: Claude` or any Claude/AI co-authorship mentions in commit messages.
+- Always update `CHANGELOG.md` when making changes — log new features, fixes, and improvements under the current version heading.
 
 ## Project Overview
 
