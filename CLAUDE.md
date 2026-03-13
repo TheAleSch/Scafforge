@@ -34,9 +34,11 @@ The manifest uses `"documentAccess": "dynamic-page"` for performance (avoids loa
 
 - **`figma.currentPage = x`** → must use **`await figma.setCurrentPageAsync(x)`**
 - **`figma.getLocalPaintStyles()`** → must use **`await figma.getLocalPaintStylesAsync()`** (same for effect/text styles)
+- **`node.effectStyleId = id`** → must use **`await node.setEffectStyleIdAsync(id)`** (same pattern for `fillStyleId`, `strokeStyleId`, `textStyleId`)
 - **`await` inside `.forEach()`** does not work — use **`for` loops** instead
 - Before accessing all pages (e.g. clear file), call **`await figma.loadAllPagesAsync()`**
 - Any function using these async APIs must itself be `async` and `await`ed at the call site
+- When making a builder function `async`, update **all call sites** to `await` it — including the `single`, `grouped`, and `per-component` loops in `buildCanvasComponents()`
 
 ## Architecture
 
@@ -52,7 +54,7 @@ UI (`ui.html`) sends options via `parent.postMessage({pluginMessage: ...})` → 
 - **ALE_TOKEN_MAP** — Maps classic token names → Ale Style equivalents for automatic resolution in `vp()`
 - **COMPONENT_DEFINITIONS** — Maps component keys to their token requirements (alias-based)
 - **STYLE_PRESETS** — 5 visual styles (Vega, Nova, Maia, Lyra, Mira) with radius/sizing/spacing
-- **VAR_CACHE / FLOAT_CACHE / ICON_CACHE** — Runtime caches populated before component generation
+- **VAR_CACHE / FLOAT_CACHE / ICON_CACHE / EFFECT_STYLE_CACHE** — Runtime caches populated before component generation
 
 ### Token Structure Modes
 
